@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Download,
   Link2,
@@ -40,7 +40,7 @@ type Platform = {
   name: string;
   hint: string;
   color: string;
-  icon: JSX.Element;
+  icon: ReactNode;
 };
 
 const platforms: Platform[] = [
