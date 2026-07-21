@@ -307,22 +307,22 @@ function Index() {
 
         {/* Platforms strip */}
         <section id="platforms" className="mx-auto mt-32 w-full max-w-5xl">
-          <p className="text-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/60 font-schibsted">
+          <p className="text-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/50 font-schibsted">
             Works everywhere you scroll
           </p>
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {platforms.map((p) => (
               <div
                 key={p.id}
-                className="glass group flex flex-col items-center gap-3 rounded-2xl p-7 transition duration-300 hover:-translate-y-1"
+                className="group flex flex-col items-center gap-3 rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-7 transition duration-300 hover:-translate-y-1 hover:bg-black/40"
               >
                 <div
                   className="flex h-12 w-12 items-center justify-center rounded-xl transition group-hover:scale-110"
-                  style={{ backgroundColor: `${p.tint}18`, color: p.tint }}
+                  style={{ backgroundColor: `${p.tint}22`, color: p.tint }}
                 >
                   {p.icon}
                 </div>
-                <div className="text-[15px] font-semibold tracking-tight font-schibsted">{p.name}</div>
+                <div className="text-[15px] font-semibold tracking-tight font-schibsted text-white">{p.name}</div>
               </div>
             ))}
           </div>
@@ -334,7 +334,7 @@ function Index() {
             <h2 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.035em] sm:text-5xl font-fustat text-white">
               Built for people who <span className="italic font-normal">just want the file.</span>
             </h2>
-            <p className="mt-5 text-[17px] leading-relaxed text-white/80 font-fustat">
+            <p className="mt-5 text-[17px] leading-relaxed text-white/70 font-fustat">
               No forced ads before the download. No blurry rips. No sketchy popups.
             </p>
           </div>
@@ -357,12 +357,12 @@ function Index() {
                 text: "No daily caps. No sign-up wall. Paste as many links as you like.",
               },
             ].map((f) => (
-              <div key={f.title} className="glass rounded-2xl p-7">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-foreground text-background">
+              <div key={f.title} className="rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-7 hover:bg-black/40 transition">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
                   {f.icon}
                 </div>
-                <h3 className="mt-6 text-[19px] font-semibold tracking-tight font-fustat">{f.title}</h3>
-                <p className="mt-2 text-[14.5px] leading-relaxed text-muted-foreground font-fustat">{f.text}</p>
+                <h3 className="mt-6 text-[19px] font-semibold tracking-tight font-fustat text-white">{f.title}</h3>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-white/60 font-fustat">{f.text}</p>
               </div>
             ))}
           </div>
@@ -370,7 +370,7 @@ function Index() {
 
         {/* How it works */}
         <section className="mx-auto mt-32 w-full max-w-5xl">
-          <div className="glass-strong rounded-[28px] p-8 sm:p-14">
+          <div className="rounded-[28px] bg-black/30 backdrop-blur-md border border-white/10 p-8 sm:p-14">
             <div className="grid gap-10 md:grid-cols-3">
               {[
                 { n: "01", t: "Copy the link", d: "From the app or browser share sheet." },
@@ -378,9 +378,9 @@ function Index() {
                 { n: "03", t: "Pick video or audio", d: "Grab it in the quality you need." },
               ].map((s) => (
                 <div key={s.n} className="font-fustat">
-                  <div className="text-5xl font-light text-black/70">{s.n}</div>
-                  <div className="mt-4 text-[19px] font-semibold tracking-tight">{s.t}</div>
-                  <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted-foreground">{s.d}</p>
+                  <div className="text-5xl font-light text-white/20">{s.n}</div>
+                  <div className="mt-4 text-[19px] font-semibold tracking-tight text-white">{s.t}</div>
+                  <p className="mt-1.5 text-[14.5px] leading-relaxed text-white/60">{s.d}</p>
                 </div>
               ))}
             </div>
