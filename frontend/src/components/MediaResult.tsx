@@ -79,10 +79,12 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
       </div>
 
       {/* Media Preview */}
-      {!info.isImage && info.videoUrl && (
+      {!info.isImage && (videoFormats.length > 0 || info.videoUrl) && (
         <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
           <video
-            src={info.videoUrl}
+            src={videoFormats.length > 0
+              ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
+              : info.videoUrl}
             controls
             autoPlay
             muted

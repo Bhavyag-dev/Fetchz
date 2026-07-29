@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   Sparkles,
   Video,
@@ -7,6 +7,7 @@ import {
   ArrowUp,
   Check,
   AlertCircle,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchMediaInfo } from "../lib/api";
@@ -122,6 +123,13 @@ export function HeroDownloader() {
     setErrorMessage("");
   };
 
+  const handleClear = () => {
+    setUrl("");
+    setStatus("idle");
+    setMediaInfo(null);
+    setErrorMessage("");
+  };
+
   return (
     <section id="downloader" className="w-full max-w-[728px] mx-auto mt-[44px]">
       <div
@@ -148,12 +156,22 @@ export function HeroDownloader() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder={`Paste ${platforms.find((p) => p.id === activePlatform)?.hint ?? "a link"}...`}
-            className="w-full bg-transparent text-[16px] text-white font-noto tracking-tight placeholder:text-white/40 focus:outline-none pl-3.5 pr-12 py-2"
+            className="w-full bg-transparent text-[16px] text-white font-noto tracking-tight placeholder:text-white/40 focus:outline-none pl-3.5 pr-[5.5rem] py-2"
             onKeyDown={(e) => {
               if (e.key === "Enter") handleGrab();
             }}
             disabled={status === "loading"}
           />
+          {/* Clear button */}
+          {url.trim() && status !== "loading" && (
+            <button
+              onClick={handleClear}
+              className="absolute right-12 flex h-[28px] w-[28px] items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition"
+              aria-label="Clear URL"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
           <button
             onClick={handleGrab}
             disabled={!url.trim() || status === "loading"}

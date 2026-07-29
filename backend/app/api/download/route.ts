@@ -39,11 +39,12 @@ export async function GET(req: NextRequest) {
       upstream.headers.get("content-type") ?? "application/octet-stream";
 
     const safeFilename = filename.replace(/"/g, "");
+    const inline = searchParams.get("inline") === "true";
 
     return new NextResponse(upstream.body, {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${safeFilename}"`,
+        "Content-Disposition": inline ? "inline" : `attachment; filename="${safeFilename}"`,
         "Cache-Control": "no-store",
       },
     });

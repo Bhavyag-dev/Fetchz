@@ -81,10 +81,10 @@ const AUDIO_BITRATES  = ["320", "256", "128", "96", "64"];
 export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
   const platform: Platform = detectPlatform(url);
 
-  // First, try to get the best quality video for preview
+  // First, try to get the best quality video for preview (360p is faster to retrieve)
   const previewProbe = await cobaltFetch({
     url,
-    videoQuality: "720", 
+    videoQuality: "360", 
     downloadMode: "auto",
     filenameStyle: "pretty",
   });
