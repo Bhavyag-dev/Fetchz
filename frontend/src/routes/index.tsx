@@ -1,23 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   Download,
-  Link2,
-  Music,
-  Video,
-  Sparkles,
   Zap,
   Shield,
   Infinity as InfinityIcon,
-  Check,
-  ChevronDown,
-  ArrowUp,
   Star,
 } from "lucide-react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { VideoBackground } from "../components/VideoBackground";
+import { NavBar } from "../components/NavBar";
+import { HeroDownloader } from "../components/HeroDownloader";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/")(
+  {
   head: () => ({
     meta: [
       { title: "Fetchz — Download videos & audio from Twitter, Pinterest, Instagram, YouTube" },
@@ -42,7 +37,6 @@ export const Route = createFileRoute("/")({
 type Platform = {
   id: string;
   name: string;
-  hint: string;
   tint: string;
   icon: ReactNode;
 };
@@ -51,7 +45,6 @@ const platforms: Platform[] = [
   {
     id: "youtube",
     name: "YouTube",
-    hint: "youtube.com/watch?v=…",
     tint: "#FF0033",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
@@ -62,7 +55,6 @@ const platforms: Platform[] = [
   {
     id: "instagram",
     name: "Instagram",
-    hint: "instagram.com/reel/…",
     tint: "#E1306C",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -75,7 +67,6 @@ const platforms: Platform[] = [
   {
     id: "twitter",
     name: "Twitter / X",
-    hint: "x.com/user/status/…",
     tint: "#0F0F14",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
@@ -86,7 +77,6 @@ const platforms: Platform[] = [
   {
     id: "pinterest",
     name: "Pinterest",
-    hint: "pinterest.com/pin/…",
     tint: "#E60023",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
@@ -96,115 +86,7 @@ const platforms: Platform[] = [
   },
 ];
 
-function NavBar() {
-  const navItems = [
-    { title: "Features", href: "#features" },
-    { title: "Platforms", href: "#platforms" },
-    { title: "FAQ", href: "#faq" },
-  ];
-
-  const [hovered, setHovered] = useState<number | null>(null);
-  const { scrollY } = useScroll();
-  const [scrolled, setScrolled] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setScrolled(latest > 20);
-  });
-
-  useEffect(() => {
-    const update = () => setIsDesktop(window.innerWidth >= 768);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  return (
-    <div className="fixed inset-x-0 top-0 z-50 pointer-events-none px-4 sm:px-8 md:px-16 pt-4">
-      <motion.nav
-        initial={false}
-        animate={{
-          borderRadius: "9999px",
-          boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.5)" : "0 2px 12px rgba(0,0,0,0.2)",
-          paddingLeft: scrolled ? (isDesktop ? "1.5rem" : "1rem") : "1.25rem",
-          paddingRight: scrolled ? (isDesktop ? "1.5rem" : "1rem") : "1.25rem",
-          maxWidth: scrolled ? (isDesktop ? "38rem" : "90%") : "72rem",
-        }}
-        style={{ marginLeft: "auto", marginRight: "auto" }}
-        transition={{ type: "spring", stiffness: 120, damping: 22 }}
-        className="pointer-events-auto w-full flex items-center justify-between py-3 bg-black/40 backdrop-blur-md border border-white/10 font-schibsted text-white"
-        onMouseLeave={() => setHovered(null)}
-      >
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-2 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/20 text-white">
-            <Download className="h-4 w-4" strokeWidth={2.5} />
-          </div>
-          <span className="font-semibold text-[20px] [letter-spacing:-1.2px] text-white">
-            Fetchz
-          </span>
-        </a>
-
-        {/* Nav links */}
-        <div className="ml-auto flex items-center gap-1">
-          {navItems.map((item, idx) => (
-            <a
-              key={idx}
-              href={item.href}
-              className="relative px-3 py-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors"
-              onMouseEnter={() => setHovered(idx)}
-            >
-              {hovered === idx && (
-                <motion.span
-                  layoutId="nav-pill"
-                  className="absolute inset-0 rounded-full bg-white/10 -z-10"
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-              {item.title}
-            </a>
-          ))}
-
-          {/* Separator */}
-          <div className="h-4 w-px bg-white/20 mx-2" />
-
-          {/* CTA */}
-          <a
-            href="#downloader"
-            className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black hover:opacity-90 transition"
-          >
-            Get started
-          </a>
-        </div>
-      </motion.nav>
-    </div>
-  );
-}
-
 function Index() {
-  const [url, setUrl] = useState("");
-  const [format, setFormat] = useState<"video" | "audio">("video");
-  const [activePlatform, setActivePlatform] = useState<string>("youtube");
-  const [status, setStatus] = useState<"idle" | "working" | "ready">("idle");
-  const [appDropdownOpen, setAppDropdownOpen] = useState(false);
-
-  useEffect(() => {
-    if (!appDropdownOpen) return;
-    const handleDocumentClick = () => {
-      setAppDropdownOpen(false);
-    };
-    document.addEventListener("click", handleDocumentClick);
-    return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, [appDropdownOpen]);
-
-  const handleGrab = () => {
-    if (!url.trim()) return;
-    setStatus("working");
-    setTimeout(() => setStatus("ready"), 1400);
-  };
-
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Video Background and Overlay */}
@@ -216,7 +98,6 @@ function Index() {
 
       {/* Hero Content Area */}
       <main className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 md:px-[120px] pt-28 pb-24 flex flex-col items-center">
-
 
         {/* Main Headline */}
         <h1 className="font-fustat font-bold text-[52px] sm:text-6xl md:text-[80px] [letter-spacing:-4.8px] leading-none text-white text-center mt-[34px]">
@@ -230,143 +111,8 @@ function Index() {
           Fetchz pulls high-quality video and audio from Twitter, Pinterest, Instagram and YouTube. Drop a link, pick a format, get your file.
         </p>
 
-        {/* Downloader Search Input Box */}
-        <section id="downloader" className="w-full max-w-[728px] mx-auto mt-[44px]">
-          <div
-            style={{ backgroundColor: "rgba(0,0,0,0.24)" }}
-            className="w-full backdrop-blur-md rounded-[18px] p-5 border border-white/10 shadow-2xl flex flex-col justify-between h-[200px]"
-          >
-            {/* Top Row */}
-            <div className="flex items-center justify-between text-white font-schibsted font-medium text-[12px]">
-              <div className="flex items-center gap-2">
-                <span>Unlimited downloads</span>
-                <button className="rounded bg-[rgba(90,225,76,0.89)] hover:bg-[rgba(90,225,76,1)] px-2 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider transition">
-                  Upgrade
-                </button>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-white/80" />
-                <span>Powered by Fetchz API</span>
-              </div>
-            </div>
-
-            {/* Main Input Area */}
-            <div className="relative w-full flex items-center bg-white/8 rounded-[12px] border border-white/15 p-1">
-              <input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder={`Paste ${platforms.find((p) => p.id === activePlatform)?.hint ?? "a link"}...`}
-                className="w-full bg-transparent text-[16px] text-white font-noto tracking-tight placeholder:text-white/40 focus:outline-none pl-3.5 pr-12 py-2"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleGrab();
-                }}
-              />
-              <button
-                onClick={handleGrab}
-                disabled={!url.trim() || status === "working"}
-                className="absolute right-2 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-white text-black hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {status === "working" ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-                ) : (
-                  <ArrowUp className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-
-            {/* Bottom Row */}
-            <div className="flex items-center justify-between">
-              {/* App Selector Dropdown replacing Attach, Voice, Prompts */}
-              <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setAppDropdownOpen(!appDropdownOpen);
-                  }}
-                  className="flex items-center gap-1.5 rounded-[6px] bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition font-schibsted"
-                >
-                  <span style={{ color: platforms.find((p) => p.id === activePlatform)?.tint }}>
-                    {platforms.find((p) => p.id === activePlatform)?.icon}
-                  </span>
-                  <span>{platforms.find((p) => p.id === activePlatform)?.name}</span>
-                  <ChevronDown className="h-3 w-3 text-white/50" />
-                </button>
-                {appDropdownOpen && (
-                  <div className="absolute left-0 bottom-full mb-2 z-40 w-48 rounded-lg bg-black/50 backdrop-blur-md border border-white/10 p-1 shadow-2xl flex flex-col gap-0.5 animate-in fade-in duration-150">
-                    {platforms.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          setActivePlatform(p.id);
-                          setAppDropdownOpen(false);
-                        }}
-                        className={`flex items-center gap-2 w-full text-left rounded-md px-2.5 py-1.5 text-xs font-medium transition ${activePlatform === p.id
-                          ? "bg-white/15 text-white"
-                          : "text-white/60 hover:bg-white/10 hover:text-white"
-                          }`}
-                      >
-                        <span style={{ color: p.tint }}>{p.icon}</span>
-                        <span>{p.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Format Toggle + Character Counter */}
-              <div className="flex items-center gap-4">
-                <div className="flex bg-white/10 rounded-lg p-0.5 border border-white/10">
-                  <button
-                    onClick={() => setFormat("video")}
-                    className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${format === "video"
-                      ? "bg-white text-black shadow-sm"
-                      : "text-white/70 hover:text-white"
-                      }`}
-                  >
-                    <Video className="h-3.5 w-3.5" /> MP4
-                  </button>
-                  <button
-                    onClick={() => setFormat("audio")}
-                    className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${format === "audio"
-                      ? "bg-white text-black shadow-sm"
-                      : "text-white/70 hover:text-white"
-                      }`}
-                  >
-                    <Music className="h-3.5 w-3.5" /> MP3
-                  </button>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          {/* Result preview */}
-          {status === "ready" && (
-            <div className="glass mt-5 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center">
-              <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
-                {format === "video" ? <Video className="h-6 w-6" /> : <Music className="h-6 w-6" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-[15px] font-semibold tracking-tight">
-                  Ready · {format === "video" ? "1080p MP4" : "320kbps MP3"}
-                </p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  From {platforms.find((p) => p.id === activePlatform)?.name}
-                </p>
-              </div>
-              <button className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition hover:opacity-90">
-                <Download className="h-4 w-4" /> Download
-              </button>
-            </div>
-          )}
-
-          {/* Trust row */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-white/60 font-schibsted">
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Up to 4K quality</span>
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> No files stored</span>
-            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Works on mobile</span>
-          </div>
-        </section>
+        {/* Downloader — now connected to real backend */}
+        <HeroDownloader />
 
         {/* Platforms strip */}
         <section id="platforms" className="mx-auto mt-32 w-full max-w-5xl">
