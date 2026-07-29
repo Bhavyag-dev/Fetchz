@@ -1,0 +1,7 @@
+# Fetchz requires the following system tools.
+# Install via Homebrew on macOS:
+#   brew install yt-dlp ffmpeg
+#
+# Or via pip:
+#   pip install -U yt-dlp
+#   # ffmpeg from https://ffmpeg.org or `brew install ffmpeg`
