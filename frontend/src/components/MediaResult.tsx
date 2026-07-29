@@ -78,11 +78,48 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         </button>
       </div>
 
+      {/* Media Preview */}
+      {!info.isImage && info.videoUrl && (
+        <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
+          <video
+            src={info.videoUrl}
+            controls
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full max-h-72 object-contain bg-black"
+            onError={(e) => {
+              // Hide the video player if the URL fails to load
+              (e.target as HTMLVideoElement).parentElement!.style.display = "none";
+            }}
+          />
+        </div>
+      )}
+
+      {/* Thumbnail fallback when no direct video URL */}
+      {!info.isImage && !info.videoUrl && info.thumbnail && (
+        <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
+          <img
+            src={info.thumbnail}
+            alt={info.title}
+            className="w-full max-h-56 object-contain bg-black"
+            onError={(e) => {
+              (e.target as HTMLImageElement).parentElement!.style.display = "none";
+            }}
+          />
+        </div>
+      )}
+
       {/* Image-only post */}
       {info.isImage && info.imageUrl && (
         <div className="mt-4">
-          <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 max-h-64">
-            <img src={info.imageUrl} alt={info.title} className="w-full h-full object-contain" />
+          <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40 max-h-72">
+            <img
+              src={info.imageUrl}
+              alt={info.title}
+              className="w-full h-full object-contain bg-black"
+            />
           </div>
           <button
             onClick={handleImageDownload}
