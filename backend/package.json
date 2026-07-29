@@ -4,7 +4,7 @@
   "private": true,
   "description": "Fetchz backend API – universal media downloader for X, Instagram, Threads, and Pinterest",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 8080",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
