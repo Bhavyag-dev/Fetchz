@@ -1,10 +1,8 @@
 # Fetchz
 
-Fetchz is a web application for retrieving publicly available media from supported social platforms. Paste a post URL, review the available media, select a format, and download the result.
+Fetchz downloads publicly available media from YouTube, X, Instagram, and Pinterest. Paste a post URL, preview the media, choose a format, and download it.
 
 ## Supported platforms
-
-Fetchz supports public media from the following platforms.
 
 | Platform | Video | Audio | Images |
 | --- | --- | --- | --- |
@@ -13,88 +11,141 @@ Fetchz supports public media from the following platforms.
 | Instagram | Yes | Yes | Yes |
 | Pinterest | Yes | Yes | Yes |
 
-Private, deleted, age-restricted, or sign-in-only posts cannot be downloaded.
+Private, deleted, age-restricted, sign-in-only, or platform-restricted posts cannot be downloaded.
 
-## How it works
+## Architecture
 
-The frontend accepts a supported URL and requests media information from the backend.
-
-The backend identifies the platform and retrieves metadata and available formats. YouTube downloads use yt-dlp. Other supported platforms use Cobalt with yt-dlp as a fallback where available.
-
-The selected file is streamed through the backend so the browser receives a downloadable response.
-
-## Project structure
+The app is split into two deployable services:
 
 ```text
-Fetchz/
-  backend/
-    app/api/          API routes for media information downloads and thumbnails
-    lib/              Platform detection provider clients and media utilities
-    types/            Backend TypeScript types
-    middleware.ts     API CORS middleware
-  frontend/
-    src/components/   Downloader and interface components
-    src/lib/          API client and shared frontend types
-    src/routes/       Application routes
-    public/           Static assets
-  README.md           Project documentation
+Browser → Vercel frontend → Render API → media provider
 ```
 
-## Requirements
+- `frontend/` is the Vite/TanStack web app. It is deployed to Vercel.
+- `backend/` is a Next.js API. It is deployed to Render as a Docker web service because YouTube support requires `yt-dlp` and `FFmpeg`.
+- The frontend calls the API using the build-time `VITE_API_URL` value.
 
-Install Node.js 20 or later.
+## Deploy to Vercel and Render
 
-Install yt-dlp and FFmpeg for YouTube downloads and yt-dlp fallback support.
+Deploy the backend first, then use its public HTTPS URL when deploying the frontend.
+
+### 1. Create the Render backend
+
+1. Push this repository to GitHub, GitLab, or Bitbucket.
+2. In Render, select **New → Web Service** and connect the repository.
+3. Use these settings:
+
+   | Setting | Value |
+   | --- | --- |
+   | Runtime | `Docker` |
+   | Root Directory | `backend` |
+   | Dockerfile Path | `./Dockerfile` |
+   | Health Check Path | `/api/health` |
+
+4. Add the `FRONTEND_ORIGIN` environment variable after the Vercel deployment is created. Use the exact Vercel production URL, for example `https://fetchz.vercel.app`.
+5. Deploy. Copy the resulting Render URL, such as `https://fetchz-api.onrender.com`.
+
+The included [backend/Dockerfile](backend/Dockerfile) installs Node 20, FFmpeg, and yt-dlp. Do not use a static site for the backend. Render web services run the production command automatically and provide the `PORT` variable that Next.js uses.
+
+> Render can spin down inactive instances on some plans. The first request after an idle period may be slower. Use an always-on plan if that is unacceptable.
+
+### 2. Create the Vercel frontend
+
+1. In Vercel, select **Add New → Project** and import the same repository.
+2. Set **Root Directory** to `frontend`.
+3. Vercel should detect Vite. Keep the build command as `npm run build`.
+4. Add this environment variable for **Production** and **Preview**:
+
+   | Variable | Value |
+   | --- | --- |
+   | `VITE_API_URL` | Your Render URL, for example `https://fetchz-api.onrender.com` |
+
+5. Deploy and copy the Vercel URL.
+6. Return to Render and set `FRONTEND_ORIGIN` to that exact Vercel URL. Redeploy the Render service.
+
+`VITE_API_URL` is public browser configuration, not a secret. Vite embeds it into the frontend during the build, so changing it requires a new Vercel deployment.
+
+### 3. Preview deployments and custom domains
+
+The API only permits browser requests from local development and origins listed in `FRONTEND_ORIGIN`. To use Vercel preview deployments, add each allowed preview domain as a comma-separated value:
+
+```text
+FRONTEND_ORIGIN=https://fetchz.vercel.app,https://fetchz-git-main-your-team.vercel.app
+```
+
+After adding a custom frontend domain, include it in `FRONTEND_ORIGIN` and redeploy Render. Do not use `*` in production; restricting origins prevents other sites from using the API from a visitor’s browser.
+
+### 4. Verify the deployment
+
+From the Vercel site:
+
+1. Paste a public YouTube URL and confirm the preview appears and a download completes.
+2. Paste one public URL from X, Instagram, and Pinterest.
+3. Open browser developer tools and confirm `POST /api/info` targets the Render URL and has no CORS error.
+4. Confirm a Threads URL returns an unsupported-link error.
+
+If a provider fails, check the Render service logs first. Provider availability can change and private or restricted posts are expected to fail.
+
+## Local development
+
+### Requirements
+
+- Node.js 20 or newer
+- `yt-dlp` and FFmpeg for YouTube downloads and yt-dlp fallback support
+
+macOS:
 
 ```bash
 brew install yt-dlp ffmpeg
 ```
 
-## Run the backend
-
-Open a terminal in the backend directory.
+### Backend
 
 ```bash
 cd backend
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-The backend starts at `http://localhost:8080`.
+The API starts at `http://localhost:8080`.
 
-## Run the frontend
-
-Open a second terminal in the frontend directory.
+### Frontend
 
 ```bash
 cd frontend
+cp .env.example .env.local
+# Change VITE_API_URL to http://localhost:8080 in .env.local
 npm install
 npm run dev
 ```
 
-The frontend starts at `http://localhost:3000` and uses `http://localhost:8080` as its default API URL.
+The frontend starts at `http://localhost:3000`.
 
-## Configuration
+## Environment variables
 
-The backend accepts these optional environment variables.
+### Frontend
 
-| Variable | Purpose |
-| --- | --- |
-| `COBALT_API_URL` | Cobalt API base URL |
-| `YTDLP_PATH` | Path to the yt-dlp executable |
-| `FFMPEG_PATH` | Path to the FFmpeg executable or directory |
+| Variable | Required | Description |
+| --- | --- | --- |
+| `VITE_API_URL` | Yes in production | Public base URL of the Render API, without a trailing slash. |
 
-The frontend accepts this optional environment variable.
+### Backend
 
-| Variable | Purpose |
-| --- | --- |
-| `VITE_API_URL` | Backend API base URL |
+| Variable | Required | Description |
+| --- | --- | --- |
+| `FRONTEND_ORIGIN` | Yes in production | Comma-separated, exact frontend origins permitted by CORS. |
+| `COBALT_API_URL` | No | Base URL for a self-hosted Cobalt API. |
+| `YTDLP_PATH` | No | Path to the yt-dlp executable when not using Docker. |
+| `FFMPEG_PATH` | No | Path to FFmpeg or its directory when not using Docker. |
+
+Never commit `.env.local` or credentials. The `.env.example` files document the safe configuration shape.
 
 ## API
 
 ### `POST /api/info`
 
-Accepts a JSON body containing a supported URL. Returns media metadata and format options.
+Returns metadata and format options for a supported media URL.
 
 ```json
 {
@@ -104,12 +155,26 @@ Accepts a JSON body containing a supported URL. Returns media metadata and forma
 
 ### `GET /api/download`
 
-Accepts `url` and `format_id` query parameters. Streams the selected file as a browser download.
+Streams a selected format as a download. Required query parameters are `url` and `format_id`. Add `inline=true` only for browser video previews.
 
 ### `GET /api/thumbnail`
 
-Accepts a `url` query parameter. Returns a proxied thumbnail where one is available.
+Returns a proxied thumbnail where one is available.
 
-## Development notes
+## Security and operational notes
 
-Keep the frontend and backend running during local development. Do not commit credentials or provider tokens. Media providers can change their access rules and supported public content may vary over time.
+- The backend validates incoming URLs and rejects unsupported platforms.
+- Media downloads are proxied, and the API rejects local/private upstream URLs before fetching them.
+- CORS is restricted to configured frontend origins in production.
+- The service does not store downloaded files, but it does fetch public media on behalf of the requester.
+- Keep yt-dlp current: provider changes can require extractor updates.
+- Respect platform terms, copyright, and applicable laws when using Fetchz.
+
+## Project structure
+
+```text
+Fetchz/
+  backend/       Next.js API, Dockerfile, provider integrations
+  frontend/      Vite/TanStack web app
+  README.md      Setup and deployment guide
+```
