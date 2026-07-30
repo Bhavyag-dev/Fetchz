@@ -23,6 +23,40 @@ interface ThreadsPostData {
   thumbnail?: string;
 }
 
+function decodeHtmlValue(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/\\u0026/g, "&")
+    .replace(/\\\\\//g, "/");
+}
+
+function metaContent(html: string, key: string): string | undefined {
+  const tags = html.match(/<meta\b[^>]*>/gi) ?? [];
+  for (const tag of tags) {
+    const keyMatch = tag.match(/(?:property|name)=["']([^"']+)["']/i);
+    if (keyMatch?.[1].toLowerCase() !== key.toLowerCase()) continue;
+    const contentMatch = tag.match(/content=["']([^"']*)["']/i);
+    if (contentMatch?.[1]) return decodeHtmlValue(contentMatch[1]);
+  }
+  return undefined;
+}
+
+function urlsNearKey(html: string, key: string): string[] {
+  const urls = new Set<string>();
+  let position = 0;
+  while ((position = html.indexOf(key, position)) !== -1) {
+    const fragment = html.slice(position, position + 20_000);
+    for (const match of fragment.matchAll(/https?(?::|%3A)(?:\\\/|%2F|\/){2}[^"'\\\s<>]+/gi)) {
+      const value = decodeHtmlValue(match[0]).replace(/\\["']/g, "");
+      if (/\.(mp4|m4v|jpg|jpeg|png|webp)(?:[?#]|$)/i.test(value)) urls.add(value);
+    }
+    position += key.length;
+  }
+  return [...urls];
+}
+
 /**
  * Extract Threads post data from page HTML
  * Threads embeds data in JSON-LD script tags and meta tags
@@ -50,7 +84,7 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
   const html = await response.text();
 
   // Extract JSON-LD structured data
-  const jsonLdMatch = html.match(/<script type="application\/ld\+json">(.+?)<\/script>/s);
+  const jsonLdMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
   let structuredData: any = null;
   if (jsonLdMatch) {
     try {
@@ -61,11 +95,11 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
   }
 
   // Extract media from meta tags
-  const ogVideoMatch = html.match(/<meta property="og:video" content="([^"]+)"/);
-  const ogImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
-  const twitterPlayerMatch = html.match(/<meta name="twitter:player:stream" content="([^"]+)"/);
-  const ogTitleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
-  const ogDescMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+  const ogVideo = metaContent(html, "og:video");
+  const ogImage = metaContent(html, "og:image");
+  const twitterPlayer = metaContent(html, "twitter:player:stream");
+  const ogTitle = metaContent(html, "og:title");
+  const ogDescription = metaContent(html, "og:description");
 
   // Try to extract from embedded JSON data
   const embedDataMatch = html.match(/window\.__RELAY_STORE__\s*=\s*({.+?});/s);
@@ -81,18 +115,18 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
   const media: ThreadsMediaItem[] = [];
   
   // Priority 1: Twitter player stream (usually best quality)
-  if (twitterPlayerMatch && twitterPlayerMatch[1]) {
+  if (twitterPlayer) {
     media.push({
       type: "video",
-      url: twitterPlayerMatch[1],
+      url: twitterPlayer,
     });
   }
   
   // Priority 2: OG video tag
-  if (ogVideoMatch && ogVideoMatch[1] && !media.some(m => m.url === ogVideoMatch[1])) {
+  if (ogVideo && !media.some(m => m.url === ogVideo)) {
     media.push({
       type: "video",
-      url: ogVideoMatch[1],
+      url: ogVideo,
     });
   }
 
@@ -135,11 +169,20 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
     });
   }
 
+  // Threads frequently ships the Relay payload inside an inline script rather
+  // than `window.__RELAY_STORE__`. Pull the media URLs from those payloads too.
+  for (const videoUrl of urlsNearKey(html, "video_versions")) {
+    if (!media.some((item) => item.url === videoUrl)) media.push({ type: "video", url: videoUrl });
+  }
+  for (const imageUrl of urlsNearKey(html, "image_versions2")) {
+    if (!media.some((item) => item.url === imageUrl)) media.push({ type: "image", url: imageUrl });
+  }
+
   // Fallback: If only image found
-  if (media.length === 0 && ogImageMatch && ogImageMatch[1]) {
+  if (media.length === 0 && ogImage) {
     media.push({
       type: "image",
-      url: ogImageMatch[1],
+      url: ogImage,
     });
   }
 
@@ -147,14 +190,14 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
     throw new ThreadsError("no_media", "Could not extract media from this Threads post. It may be private or unavailable.");
   }
 
-  const title = ogTitleMatch?.[1] || ogDescMatch?.[1] || "Threads Post";
+  const title = ogTitle || ogDescription || "Threads Post";
   const author = extractAuthorFromTitle(title) || extractAuthorFromUrl(url);
 
   return {
     title: cleanTitle(title),
     author,
     media,
-    thumbnail: ogImageMatch?.[1],
+    thumbnail: ogImage,
   };
 }
 
@@ -220,10 +263,22 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
         isVideo: true,
         isAudio: false,
         height,
-        // Store the direct URL in a custom field we can retrieve later
-        // @ts-ignore
         directUrl: video.url,
       });
+    });
+  }
+
+  // Static Threads posts need a format too, otherwise the UI has to navigate
+  // directly to Meta's CDN and the browser may block the download.
+  if (isImage) {
+    formats.push({
+      id: "threads-image-0",
+      label: "Image",
+      ext: imageMedia[0]?.url.match(/\.(jpg|jpeg|png|webp)(?:[?#]|$)/i)?.[1] || "jpg",
+      sizeBytes: 0,
+      isVideo: false,
+      isAudio: false,
+      directUrl: imageMedia[0]?.url,
     });
   }
 
@@ -254,8 +309,7 @@ export async function getDownloadUrl(url: string, formatId: string): Promise<{ d
     throw new ThreadsError("format_not_found", "The requested format was not found.");
   }
 
-  // @ts-ignore - we stored this in fetchMediaInfo
-  const directUrl = format.directUrl as string | undefined;
+  const directUrl = format.directUrl;
   
   if (!directUrl) {
     throw new ThreadsError("no_url", "Could not find direct URL for this format.");

@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDownloadUrl } from "@/lib/media-fetcher";
-import { CobaltError, ThreadsError } from "@/lib/media-fetcher";
+import { CobaltError, ThreadsError, YtDlpError } from "@/lib/media-fetcher";
 import { detectPlatform, isValidUrl } from "@/lib/detect";
+import { startDownload as startYtDlpDownload } from "@/lib/ytdlp";
+import { Readable } from "node:stream";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+function isSafeRemoteMediaUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:" || parsed.username || parsed.password) return false;
+
+    const host = parsed.hostname.toLowerCase();
+    if (host === "localhost" || host.endsWith(".localhost") || host === "::1") return false;
+    if (/^127\./.test(host) || /^0\./.test(host) || /^169\.254\./.test(host)) return false;
+    if (/^10\./.test(host) || /^192\.168\./.test(host)) return false;
+    const private172 = host.match(/^172\.(\d{1,3})\./);
+    if (private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31) return false;
+    if (/^(fc|fd|fe80):/i.test(host)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -22,7 +42,35 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    if (detectPlatform(url) === "youtube") {
+      const isAudio = formatId.startsWith("audio:");
+      const { proc, filename } = startYtDlpDownload({
+        url,
+        formatId: isAudio ? formatId.slice("audio:".length) : formatId,
+        remuxTo: isAudio ? "mp3" : "mp4",
+      });
+      proc.stderr?.resume();
+      proc.once("error", () => proc.kill());
+      req.signal.addEventListener("abort", () => proc.kill(), { once: true });
+
+      if (!proc.stdout) {
+        throw new YtDlpError("stream_failed", "yt-dlp did not create a download stream.");
+      }
+
+      return new NextResponse(Readable.toWeb(proc.stdout) as ReadableStream, {
+        headers: {
+          "Content-Type": isAudio ? "audio/mpeg" : "video/mp4",
+          "Content-Disposition": `attachment; filename="${filename.replace(/\"/g, "")}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
     const { downloadUrl, filename } = await getDownloadUrl(url, formatId);
+
+    if (!isSafeRemoteMediaUrl(downloadUrl)) {
+      return NextResponse.json({ error: "unsafe_upstream" }, { status: 502 });
+    }
 
     // Proxy the file through our server so the browser sees a clean download
     const upstream = await fetch(downloadUrl, {
@@ -50,7 +98,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    if (err instanceof CobaltError || err instanceof ThreadsError) {
+    if (err instanceof CobaltError || err instanceof ThreadsError || err instanceof YtDlpError) {
       return NextResponse.json({ error: err.code, message: err.message }, { status: 422 });
     }
     const message = err instanceof Error ? err.message : "Unknown error";

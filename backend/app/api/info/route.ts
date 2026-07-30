@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
   if (detectPlatform(url) === "unknown") {
     return NextResponse.json(
-      { error: "unsupported", message: "Paste a link from X, Instagram, Threads, or Pinterest." },
+      { error: "unsupported", message: "Paste a link from YouTube, X, Instagram, Threads, or Pinterest." },
       { status: 400 }
     );
   }

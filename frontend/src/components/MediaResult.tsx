@@ -24,7 +24,8 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
 
   const handleImageDownload = () => {
     if (info.imageUrl) {
-      window.open(info.imageUrl, "_blank");
+      const format = info.formats.find((item) => item.id === "threads-image-0");
+      window.open(format ? getDownloadUrl(info.url, format.id) : info.imageUrl, "_blank");
     }
   };
 

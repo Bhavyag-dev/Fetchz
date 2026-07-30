@@ -97,7 +97,9 @@ function buildVideoFormats(formats: YtDlpFormat[]): MediaFormat[] {
     });
     const f = sorted[0];
     out.push({
-      id: f.format_id,
+      // Most high-resolution YouTube formats are video-only. Pair them with
+      // the best available audio track so each button produces a playable file.
+      id: `${f.format_id}+bestaudio/best`,
       label: `${height}p · ${f.ext.toUpperCase()}`,
       ext: f.ext,
       sizeBytes: f.filesize ?? f.filesize_approx ?? 0,
@@ -121,7 +123,7 @@ function buildAudioFormats(formats: YtDlpFormat[]): MediaFormat[] {
     if (seen.has(abr)) continue;
     seen.add(abr);
     out.push({
-      id: f.format_id,
+      id: `audio:${f.format_id}`,
       label: `Audio · ${abr}kbps`,
       ext: f.ext,
       sizeBytes: f.filesize ?? f.filesize_approx ?? 0,
@@ -217,6 +219,7 @@ export function startDownload(opts: DownloadOptions): {
     "--no-warnings",
     "--no-playlist",
     "-f", opts.formatId,
+    "--merge-output-format", "mp4",
     "-o", "-", // stream to stdout
   ];
 

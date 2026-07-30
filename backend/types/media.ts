@@ -1,4 +1,4 @@
-export type Platform = "x" | "instagram" | "threads" | "pinterest" | "unknown";
+export type Platform = "x" | "instagram" | "threads" | "pinterest" | "youtube" | "unknown";
 
 export interface MediaFormat {
   /** yt-dlp format id (e.g. "137+140" or "bestaudio") */
@@ -11,6 +11,8 @@ export interface MediaFormat {
   sizeBytes: number;
   /** Best available thumbnail for the format */
   thumbnail?: string;
+  /** Provider URL retained server-side for direct-media providers. */
+  directUrl?: string;
   /** True if this is a video format */
   isVideo: boolean;
   /** True if this is an audio-only format (MP3 candidate) */
