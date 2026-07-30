@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchMediaInfo, CobaltError } from "@/lib/cobalt";
+import { fetchMediaInfo } from "@/lib/media-fetcher";
+import { CobaltError, YtDlpError, ThreadsError } from "@/lib/media-fetcher";
 import { detectPlatform, isValidUrl } from "@/lib/detect";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
   if (detectPlatform(url) === "unknown") {
     return NextResponse.json(
-      { error: "unsupported", message: "Paste a link from YouTube, X, Instagram, Threads, or Pinterest." },
+      { error: "unsupported", message: "Paste a link from X, Instagram, Threads, or Pinterest." },
       { status: 400 }
     );
   }
@@ -41,10 +42,11 @@ export async function POST(req: NextRequest) {
     const info = await fetchMediaInfo(url);
     return NextResponse.json(info);
   } catch (err) {
-    if (err instanceof CobaltError) {
+    if (err instanceof CobaltError || err instanceof YtDlpError || err instanceof ThreadsError) {
       const status =
         err.code === "auth_required" ? 403 :
         err.code === "unavailable"   ? 403 :
+        err.code === "not_found"     ? 404 :
         err.code === "no_media"      ? 404 : 422;
       return NextResponse.json({ error: err.code, message: err.message }, { status });
     }

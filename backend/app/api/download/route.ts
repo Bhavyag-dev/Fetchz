@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDownloadUrl, CobaltError } from "@/lib/cobalt";
+import { getDownloadUrl } from "@/lib/media-fetcher";
+import { CobaltError, ThreadsError } from "@/lib/media-fetcher";
 import { detectPlatform, isValidUrl } from "@/lib/detect";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    if (err instanceof CobaltError) {
+    if (err instanceof CobaltError || err instanceof ThreadsError) {
       return NextResponse.json({ error: err.code, message: err.message }, { status: 422 });
     }
     const message = err instanceof Error ? err.message : "Unknown error";

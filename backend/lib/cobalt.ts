@@ -81,23 +81,44 @@ const AUDIO_BITRATES  = ["320", "256", "128", "96", "64"];
 export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
   const platform: Platform = detectPlatform(url);
 
-  // First, try to get the best quality video for preview (360p is faster to retrieve)
-  const previewProbe = await cobaltFetch({
-    url,
-    videoQuality: "360", 
-    downloadMode: "auto",
-    filenameStyle: "pretty",
-  });
+  let previewProbe: CobaltResponse;
+  
+  try {
+    // First, try to get the best quality video for preview (360p is faster to retrieve)
+    previewProbe = await cobaltFetch({
+      url,
+      videoQuality: "360", 
+      downloadMode: "auto",
+      filenameStyle: "pretty",
+    });
 
-  if (previewProbe.status === "error") {
-    const code = (previewProbe as CobaltErrorResponse).error.code;
-    if (code.includes("content.unavailable") || code.includes("fetch.empty")) {
-      throw new CobaltError("unavailable", "This post is private or unavailable.");
+    if (previewProbe.status === "error") {
+      const errorResponse = previewProbe as CobaltErrorResponse;
+      const code = errorResponse.error.code;
+      
+      // Log the error for debugging
+      console.error(`Cobalt API error for ${platform} URL: ${code}`, errorResponse.error);
+      
+      if (code.includes("content.unavailable") || code.includes("fetch.empty")) {
+        throw new CobaltError("unavailable", "This post is private or unavailable.");
+      }
+      if (code.includes("content.age")) {
+        throw new CobaltError("auth_required", "Age-restricted content cannot be downloaded.");
+      }
+      if (code.includes("content.no_valid_content")) {
+        // This often happens with Threads - throw a specific error to trigger fallback
+        throw new CobaltError("no_valid_content", `No valid content found for ${platform} URL`);
+      }
+      throw new CobaltError("cobalt_error", `Could not fetch media: ${code}`);
     }
-    if (code.includes("content.age")) {
-      throw new CobaltError("auth_required", "Age-restricted content cannot be downloaded.");
+  } catch (error) {
+    // If it's already a CobaltError, re-throw it
+    if (error instanceof CobaltError) {
+      throw error;
     }
-    throw new CobaltError("cobalt_error", `Could not fetch media: ${code}`);
+    // For network/timeout errors, throw a specific error to allow fallback
+    console.error(`Network error when fetching from Cobalt API for ${platform}:`, error);
+    throw new CobaltError("network_error", `Failed to connect to Cobalt API: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
   // Handle picker responses (multiple items)

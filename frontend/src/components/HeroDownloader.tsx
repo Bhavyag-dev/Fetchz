@@ -24,17 +24,6 @@ type Platform = {
 
 const platforms: Platform[] = [
   {
-    id: "youtube",
-    name: "YouTube",
-    hint: "youtube.com/watch?v=…",
-    tint: "#FF0033",
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
-        <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z" />
-      </svg>
-    ),
-  },
-  {
     id: "instagram",
     name: "Instagram",
     hint: "instagram.com/reel/…",
@@ -69,22 +58,11 @@ const platforms: Platform[] = [
       </svg>
     ),
   },
-  {
-    id: "threads",
-    name: "Threads",
-    hint: "threads.net/@user/post/…",
-    tint: "#FFFFFF",
-    icon: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.55 12.38c-.37.38-.87.57-1.45.57-.38 0-.71-.08-.98-.24-.26-.16-.48-.4-.64-.71-.16-.31-.24-.69-.24-1.14v-2.73c0-.39-.07-.71-.21-.95-.14-.24-.35-.36-.63-.36-.28 0-.49.12-.63.36-.14.24-.21.56-.21.95v2.73c0 .45-.08.83-.24 1.14-.16.31-.38.55-.64.71-.27.16-.6.24-.98.24-.58 0-1.08-.19-1.45-.57C7.14 13.99 7 13.3 7 12.3v-2.68c0-1.01.14-1.7.43-2.07.29-.37.79-.56 1.5-.56.33 0 .61.08.84.23.23.15.41.37.54.67.13.3.19.66.19 1.1v2.73c0 .32.05.58.15.77.1.19.26.29.49.29s.39-.1.49-.29c.1-.19.15-.45.15-.77v-2.73c0-.44.06-.8.19-1.1.13-.3.31-.52.54-.67.23-.15.51-.23.84-.23.71 0 1.21.19 1.5.56.29.37.43 1.06.43 2.07v2.68c0 1-.14 1.69-.43 2.08z" />
-      </svg>
-    ),
-  },
 ];
 
 export function HeroDownloader() {
   const [url, setUrl] = useState("");
-  const [activePlatform, setActivePlatform] = useState<string>("youtube");
+  const [activePlatform, setActivePlatform] = useState<string>("instagram");
   const [appDropdownOpen, setAppDropdownOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [mediaInfo, setMediaInfo] = useState<MediaInfo | null>(null);
@@ -104,9 +82,7 @@ export function HeroDownloader() {
 
     if (/twitter\.com|x\.com/i.test(trimmed)) setActivePlatform("twitter");
     else if (/instagram\.com/i.test(trimmed)) setActivePlatform("instagram");
-    else if (/threads\.(net|com)/i.test(trimmed)) setActivePlatform("threads");
     else if (/pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it/i.test(trimmed)) setActivePlatform("pinterest");
-    else if (/youtube\.com|youtu\.be/i.test(trimmed)) setActivePlatform("youtube");
   }, [url]);
 
   const handleGrab = async () => {

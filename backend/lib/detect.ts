@@ -5,7 +5,6 @@ const PATTERNS: { platform: Platform; re: RegExp }[] = [
   { platform: "instagram", re: /^https?:\/\/(www\.)?instagram\.com\/(p|reel|reels|tv)\/[\w-]+/i },
   { platform: "threads", re: /^https?:\/\/(www\.)?threads\.(net|com)\/@?[\w.\-_]+\/post\/[\w-]+/i },
   { platform: "pinterest", re: /^https?:\/\/(www\.)?(pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it)\//i },
-  { platform: "youtube", re: /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i },
 ];
 
 export function detectPlatform(url: string): Platform {
@@ -31,6 +30,5 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   instagram: "Instagram",
   threads: "Threads",
   pinterest: "Pinterest",
-  youtube: "YouTube",
   unknown: "Link",
 };
