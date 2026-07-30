@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDownloadUrl } from "@/lib/media-fetcher";
-import { CobaltError, ThreadsError, YtDlpError } from "@/lib/media-fetcher";
+import { CobaltError, YtDlpError } from "@/lib/media-fetcher";
 import { detectPlatform, isValidUrl } from "@/lib/detect";
 import { startDownload as startYtDlpDownload } from "@/lib/ytdlp";
 import { Readable } from "node:stream";
@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const url      = searchParams.get("url")?.trim();
   const formatId = searchParams.get("format_id")?.trim();
+  const inline = searchParams.get("inline") === "true";
 
   if (!url || !isValidUrl(url)) {
     return NextResponse.json({ error: "invalid_url" }, { status: 400 });
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(Readable.toWeb(proc.stdout) as ReadableStream, {
         headers: {
           "Content-Type": isAudio ? "audio/mpeg" : "video/mp4",
-          "Content-Disposition": `attachment; filename="${filename.replace(/\"/g, "")}"`,
+          "Content-Disposition": inline ? "inline" : `attachment; filename="${filename.replace(/\"/g, "")}"`,
           "Cache-Control": "no-store",
         },
       });
@@ -74,8 +75,7 @@ export async function GET(req: NextRequest) {
 
     // Proxy the file through our server so the browser sees a clean download.
     // Video elements request byte ranges while they buffer and seek; forwarding
-    // the range request is especially important for Threads' CDN videos, which
-    // otherwise download as a non-playable attachment instead of autoplaying.
+    // the range request is required for reliable inline playback.
     const range = req.headers.get("range");
     const upstream = await fetch(downloadUrl, {
       headers: range ? { Range: range } : undefined,
@@ -93,7 +93,6 @@ export async function GET(req: NextRequest) {
       upstream.headers.get("content-type") ?? "application/octet-stream";
 
     const safeFilename = filename.replace(/"/g, "");
-    const inline = searchParams.get("inline") === "true";
     const upstreamHeaders = upstream.headers;
     const headers = new Headers({
       "Content-Type": contentType,
@@ -112,7 +111,7 @@ export async function GET(req: NextRequest) {
       headers,
     });
   } catch (err) {
-    if (err instanceof CobaltError || err instanceof ThreadsError || err instanceof YtDlpError) {
+    if (err instanceof CobaltError || err instanceof YtDlpError) {
       return NextResponse.json({ error: err.code, message: err.message }, { status: 422 });
     }
     const message = err instanceof Error ? err.message : "Unknown error";

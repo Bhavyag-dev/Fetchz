@@ -2,7 +2,6 @@ import type { MediaInfo, Platform } from "@/types/media";
 import { detectPlatform } from "@/lib/detect";
 import { fetchMediaInfo as cobaltFetch, CobaltError, getDownloadUrl as cobaltDownload } from "@/lib/cobalt";
 import { fetchMediaInfo as ytdlpFetch, YtDlpError } from "@/lib/ytdlp";
-import { fetchMediaInfo as threadsFetch, ThreadsError, getDownloadUrl as threadsDownload } from "@/lib/threads";
 
 const YOUTUBE_CACHE_TTL_MS = 5 * 60_000;
 const youtubeInfoCache = new Map<string, { value: MediaInfo; expiresAt: number }>();
@@ -19,19 +18,6 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
   }
 
   console.log(`Fetching media info for ${platform} URL: ${url}`);
-
-  // Use native Threads provider
-  if (platform === "threads") {
-    console.log(`Using native Threads provider...`);
-    try {
-      const result = await threadsFetch(url);
-      console.log(`Native Threads provider succeeded`);
-      return result;
-    } catch (error) {
-      console.log(`Native Threads provider failed:`, error instanceof Error ? error.message : error);
-      throw error;
-    }
-  }
 
   // YouTube's signed, short-lived media URLs are best handled directly by
   // yt-dlp. This also keeps the format IDs returned here compatible with the
@@ -97,12 +83,6 @@ export async function getDownloadUrl(url: string, formatId: string): Promise<{ d
   
   console.log(`Getting download URL for ${platform} with format ${formatId}`);
 
-  // Use native Threads provider
-  if (platform === "threads") {
-    console.log(`Using native Threads download...`);
-    return await threadsDownload(url, formatId);
-  }
-
   // YouTube downloads are streamed by the route using yt-dlp. Returning a
   // normal URL here would send yt-dlp format IDs to Cobalt, which cannot use
   // them.
@@ -132,4 +112,4 @@ export async function getDownloadUrl(url: string, formatId: string): Promise<{ d
   }
 }
 
-export { CobaltError, YtDlpError, ThreadsError };
+export { CobaltError, YtDlpError };

@@ -33,17 +33,6 @@ const extractors: ThumbnailExtractor[] = [
     },
   },
   {
-    platform: "threads",
-    extract: (url: string) => {
-      // Threads posts share the same media infrastructure as Instagram
-      const postMatch = url.match(/\/post\/([A-Za-z0-9_-]+)/);
-      if (postMatch) {
-        return `https://www.threads.net/post/${postMatch[1]}/media/?size=m`;
-      }
-      return null;
-    },
-  },
-  {
     platform: "pinterest",
     extract: (url: string) => {
       // Pinterest pin thumbnails via pin ID

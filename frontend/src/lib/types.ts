@@ -1,4 +1,4 @@
-export type Platform = "x" | "instagram" | "threads" | "pinterest" | "youtube" | "unknown";
+export type Platform = "x" | "instagram" | "pinterest" | "youtube" | "unknown";
 
 export interface MediaFormat {
   id: string;

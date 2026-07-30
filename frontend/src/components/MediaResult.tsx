@@ -16,6 +16,9 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
   const [tab, setTab] = useState<"video" | "audio">(videoFormats.length > 0 ? "video" : "audio");
   const [previewFailed, setPreviewFailed] = useState(false);
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
+  const previewUrl = videoFormats[0]
+    ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
+    : info.videoUrl;
 
   const handleDownload = (format: MediaFormat) => {
     const url = getDownloadUrl(info.url, format.id);
@@ -80,12 +83,10 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
       </div>
 
       {/* Media Preview */}
-      {!info.isImage && !previewFailed && (videoFormats.length > 0 || info.videoUrl) && (
+      {!info.isImage && !previewFailed && previewUrl && (
         <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
           <video
-            src={videoFormats.length > 0
-              ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
-              : info.videoUrl}
+            src={previewUrl}
             controls
             autoPlay
             muted
@@ -99,7 +100,7 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
       )}
 
       {/* Thumbnail fallback when no direct video URL */}
-      {!info.isImage && (previewFailed || !info.videoUrl) && info.thumbnail && (
+      {!info.isImage && (!previewUrl || previewFailed) && info.thumbnail && (
         <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
           <img
             src={info.thumbnail}

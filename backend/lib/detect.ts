@@ -3,7 +3,6 @@ import type { Platform } from "@/types/media";
 const PATTERNS: { platform: Platform; re: RegExp }[] = [
   { platform: "x", re: /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/\w+\/status\/\d+/i },
   { platform: "instagram", re: /^https?:\/\/(www\.)?instagram\.com\/(p|reel|reels|tv)\/[\w-]+/i },
-  { platform: "threads", re: /^https?:\/\/(www\.)?threads\.(net|com)\/@?[\w.\-_]+\/post\/[\w-]+/i },
   { platform: "pinterest", re: /^https?:\/\/(www\.)?(pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it)\//i },
   { platform: "youtube", re: /^https?:\/\/(www\.)?(youtube\.com\/(watch\?[^\s]*\bv=|shorts\/|live\/)|youtu\.be\/)[\w-]+/i },
 ];
@@ -29,7 +28,6 @@ export function isValidUrl(url: string): boolean {
 export const PLATFORM_LABEL: Record<Platform, string> = {
   x: "X",
   instagram: "Instagram",
-  threads: "Threads",
   pinterest: "Pinterest",
   youtube: "YouTube",
   unknown: "Link",

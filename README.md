@@ -11,7 +11,6 @@ Fetchz supports public media from the following platforms.
 | YouTube | Yes | Yes | No |
 | X | Yes | Yes | Yes |
 | Instagram | Yes | Yes | Yes |
-| Threads | Yes | No | No |
 | Pinterest | Yes | Yes | Yes |
 
 Private, deleted, age-restricted, or sign-in-only posts cannot be downloaded.
@@ -20,7 +19,7 @@ Private, deleted, age-restricted, or sign-in-only posts cannot be downloaded.
 
 The frontend accepts a supported URL and requests media information from the backend.
 
-The backend identifies the platform and retrieves metadata and available formats. YouTube downloads use yt-dlp. Threads uses its native page-data extractor. Other supported platforms use Cobalt with yt-dlp as a fallback where available.
+The backend identifies the platform and retrieves metadata and available formats. YouTube downloads use yt-dlp. Other supported platforms use Cobalt with yt-dlp as a fallback where available.
 
 The selected file is streamed through the backend so the browser receives a downloadable response.
 

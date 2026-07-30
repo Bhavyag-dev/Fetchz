@@ -31,13 +31,6 @@ const platforms: Platform[] = [
     icon: <Video className="h-4 w-4" fill="currentColor" aria-hidden />,
   },
   {
-    id: "threads",
-    name: "Threads",
-    hint: "threads.net/@user/post/…",
-    tint: "#FFFFFF",
-    icon: <span className="text-sm font-bold leading-none" aria-hidden>◎</span>,
-  },
-  {
     id: "instagram",
     name: "Instagram",
     hint: "instagram.com/reel/…",
@@ -96,7 +89,6 @@ export function HeroDownloader() {
     if (!trimmed) return;
 
     if (/youtube\.com|youtu\.be/i.test(trimmed)) setActivePlatform("youtube");
-    else if (/threads\.(net|com)/i.test(trimmed)) setActivePlatform("threads");
     else if (/twitter\.com|x\.com/i.test(trimmed)) setActivePlatform("twitter");
     else if (/instagram\.com/i.test(trimmed)) setActivePlatform("instagram");
     else if (/pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it/i.test(trimmed)) setActivePlatform("pinterest");

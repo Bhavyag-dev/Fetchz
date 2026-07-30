@@ -106,7 +106,6 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
         throw new CobaltError("auth_required", "Age-restricted content cannot be downloaded.");
       }
       if (code.includes("content.no_valid_content")) {
-        // This often happens with Threads - throw a specific error to trigger fallback
         throw new CobaltError("no_valid_content", `No valid content found for ${platform} URL`);
       }
       throw new CobaltError("cobalt_error", `Could not fetch media: ${code}`);

@@ -2,7 +2,7 @@
   "name": "fetchz-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "Fetchz backend API – universal media downloader for X, Instagram, Threads, and Pinterest",
+  "description": "Fetchz backend API – universal media downloader for YouTube, X, Instagram, and Pinterest",
   "scripts": {
     "dev": "next dev -p 8080",
     "build": "next build",
