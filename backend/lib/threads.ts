@@ -178,16 +178,8 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
     if (!media.some((item) => item.url === imageUrl)) media.push({ type: "image", url: imageUrl });
   }
 
-  // Fallback: If only image found
-  if (media.length === 0 && ogImage) {
-    media.push({
-      type: "image",
-      url: ogImage,
-    });
-  }
-
   if (media.length === 0) {
-    throw new ThreadsError("no_media", "Could not extract media from this Threads post. It may be private or unavailable.");
+    throw new ThreadsError("no_media", "No downloadable video was found in this Threads post.");
   }
 
   const title = ogTitle || ogDescription || "Threads Post";
@@ -237,8 +229,10 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
   
   const videoMedia = data.media.filter(m => m.type === "video");
   const imageMedia = data.media.filter(m => m.type === "image");
-  
-  const isImage = videoMedia.length === 0 && imageMedia.length > 0;
+
+  if (videoMedia.length === 0) {
+    throw new ThreadsError("no_media", "This Threads post does not contain a downloadable video.");
+  }
   
   // Build format list from available videos
   const formats: MediaFormat[] = [];
@@ -268,29 +262,14 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
     });
   }
 
-  // Static Threads posts need a format too, otherwise the UI has to navigate
-  // directly to Meta's CDN and the browser may block the download.
-  if (isImage) {
-    formats.push({
-      id: "threads-image-0",
-      label: "Image",
-      ext: imageMedia[0]?.url.match(/\.(jpg|jpeg|png|webp)(?:[?#]|$)/i)?.[1] || "jpg",
-      sizeBytes: 0,
-      isVideo: false,
-      isAudio: false,
-      directUrl: imageMedia[0]?.url,
-    });
-  }
-
   return {
     platform,
     url,
     title: data.title || "Threads Post",
     author: data.author,
-    thumbnail: data.thumbnail || videoMedia[0]?.thumbnail || imageMedia[0]?.url,
-    imageUrl: isImage ? imageMedia[0]?.url : undefined,
+    thumbnail: data.thumbnail || videoMedia[0]?.thumbnail,
     videoUrl: videoMedia[0]?.url,
-    isImage,
+    isImage: false,
     formats,
   };
 }
