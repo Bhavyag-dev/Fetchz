@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Download } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 const navItems = [
@@ -42,13 +41,14 @@ export function NavBar() {
         onMouseLeave={() => setHovered(null)}
       >
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 border border-white/20 text-white">
-            <Download className="h-4 w-4" strokeWidth={2.5} />
+        <a href="/" className="shrink-0" aria-label="Fetchz home">
+          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white">
+            <img
+              src="/assets/fetchz-logo.png"
+              alt=""
+              className="h-6 w-6 object-contain"
+            />
           </div>
-          <span className="font-semibold text-[20px] [letter-spacing:-1.2px] text-white">
-            Fetchz
-          </span>
         </a>
 
         {/* Nav links */}
