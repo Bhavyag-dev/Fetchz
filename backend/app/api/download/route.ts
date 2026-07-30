@@ -72,8 +72,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "unsafe_upstream" }, { status: 502 });
     }
 
-    // Proxy the file through our server so the browser sees a clean download
+    // Proxy the file through our server so the browser sees a clean download.
+    // Video elements request byte ranges while they buffer and seek; forwarding
+    // the range request is especially important for Threads' CDN videos, which
+    // otherwise download as a non-playable attachment instead of autoplaying.
+    const range = req.headers.get("range");
     const upstream = await fetch(downloadUrl, {
+      headers: range ? { Range: range } : undefined,
       signal: AbortSignal.timeout(55_000),
     });
 
@@ -89,13 +94,22 @@ export async function GET(req: NextRequest) {
 
     const safeFilename = filename.replace(/"/g, "");
     const inline = searchParams.get("inline") === "true";
+    const upstreamHeaders = upstream.headers;
+    const headers = new Headers({
+      "Content-Type": contentType,
+      "Content-Disposition": inline ? "inline" : `attachment; filename="${safeFilename}"`,
+      "Cache-Control": "no-store",
+    });
+
+    // Preserve the media headers browsers require for buffered playback.
+    for (const header of ["accept-ranges", "content-length", "content-range"]) {
+      const value = upstreamHeaders.get(header);
+      if (value) headers.set(header, value);
+    }
 
     return new NextResponse(upstream.body, {
-      headers: {
-        "Content-Type": contentType,
-        "Content-Disposition": inline ? "inline" : `attachment; filename="${safeFilename}"`,
-        "Cache-Control": "no-store",
-      },
+      status: upstream.status,
+      headers,
     });
   } catch (err) {
     if (err instanceof CobaltError || err instanceof ThreadsError || err instanceof YtDlpError) {

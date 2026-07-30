@@ -102,7 +102,7 @@ async function extractThreadsData(url: string): Promise<ThreadsPostData> {
   const ogDescription = metaContent(html, "og:description");
 
   // Try to extract from embedded JSON data
-  const embedDataMatch = html.match(/window\.__RELAY_STORE__\s*=\s*({.+?});/s);
+  const embedDataMatch = html.match(/window\.__RELAY_STORE__\s*=\s*({[\s\S]+?});/);
   let embedData: any = null;
   if (embedDataMatch) {
     try {
