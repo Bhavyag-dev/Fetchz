@@ -4,6 +4,10 @@ import { fetchMediaInfo as cobaltFetch, CobaltError, getDownloadUrl as cobaltDow
 import { fetchMediaInfo as ytdlpFetch, YtDlpError } from "@/lib/ytdlp";
 import { fetchMediaInfo as threadsFetch, ThreadsError, getDownloadUrl as threadsDownload } from "@/lib/threads";
 
+const YOUTUBE_CACHE_TTL_MS = 5 * 60_000;
+const youtubeInfoCache = new Map<string, { value: MediaInfo; expiresAt: number }>();
+const youtubeInfoInflight = new Map<string, Promise<MediaInfo>>();
+
 /**
  * Hybrid media fetcher that tries the best provider for each platform
  */
@@ -33,7 +37,20 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
   // yt-dlp. This also keeps the format IDs returned here compatible with the
   // download endpoint.
   if (platform === "youtube") {
-    return ytdlpFetch(url);
+    const cached = youtubeInfoCache.get(url);
+    if (cached && cached.expiresAt > Date.now()) return cached.value;
+
+    const inflight = youtubeInfoInflight.get(url);
+    if (inflight) return inflight;
+
+    const request = ytdlpFetch(url)
+      .then((info) => {
+        youtubeInfoCache.set(url, { value: info, expiresAt: Date.now() + YOUTUBE_CACHE_TTL_MS });
+        return info;
+      })
+      .finally(() => youtubeInfoInflight.delete(url));
+    youtubeInfoInflight.set(url, request);
+    return request;
   }
 
   // For other platforms, try Cobalt API first, then yt-dlp fallback

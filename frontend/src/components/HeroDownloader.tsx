@@ -81,6 +81,7 @@ export function HeroDownloader() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [mediaInfo, setMediaInfo] = useState<MediaInfo | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const requestRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!appDropdownOpen) return;
@@ -101,32 +102,46 @@ export function HeroDownloader() {
     else if (/pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it/i.test(trimmed)) setActivePlatform("pinterest");
   }, [url]);
 
+  const cancelFetch = () => {
+    requestRef.current?.abort();
+    requestRef.current = null;
+  };
+
   const handleGrab = async () => {
     const trimmed = url.trim();
     if (!trimmed) return;
 
+    cancelFetch();
+    const controller = new AbortController();
+    requestRef.current = controller;
     setStatus("loading");
     setErrorMessage("");
     setMediaInfo(null);
 
     try {
-      const info = await fetchMediaInfo(trimmed);
+      const info = await fetchMediaInfo(trimmed, controller.signal);
+      if (controller.signal.aborted) return;
       setMediaInfo(info);
       setStatus("success");
     } catch (err) {
+      if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError")) return;
       const message = err instanceof Error ? err.message : "Something went wrong";
       setErrorMessage(message);
       setStatus("error");
+    } finally {
+      if (requestRef.current === controller) requestRef.current = null;
     }
   };
 
   const handleClose = () => {
+    cancelFetch();
     setStatus("idle");
     setMediaInfo(null);
     setErrorMessage("");
   };
 
   const handleClear = () => {
+    cancelFetch();
     setUrl("");
     setStatus("idle");
     setMediaInfo(null);
@@ -157,16 +172,21 @@ export function HeroDownloader() {
         <div className="relative w-full flex items-center bg-white/8 rounded-[12px] border border-white/15 p-1">
           <input
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              if (status === "loading") {
+                cancelFetch();
+                setStatus("idle");
+              }
+              setUrl(e.target.value);
+            }}
             placeholder={`Paste ${platforms.find((p) => p.id === activePlatform)?.hint ?? "a link"}...`}
             className="w-full bg-transparent text-[16px] text-white font-noto tracking-tight placeholder:text-white/40 focus:outline-none pl-3.5 pr-[5.5rem] py-2"
             onKeyDown={(e) => {
               if (e.key === "Enter") handleGrab();
             }}
-            disabled={status === "loading"}
           />
           {/* Clear button */}
-          {url.trim() && status !== "loading" && (
+          {url.trim() && (
             <button
               onClick={handleClear}
               className="absolute right-12 flex h-[28px] w-[28px] items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition"
@@ -176,12 +196,12 @@ export function HeroDownloader() {
             </button>
           )}
           <button
-            onClick={handleGrab}
-            disabled={!url.trim() || status === "loading"}
+            onClick={status === "loading" ? handleClose : handleGrab}
+            disabled={!url.trim()}
             className="absolute right-2 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-white text-black hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {status === "loading" ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+              <X className="h-4 w-4" />
             ) : (
               <ArrowUp className="h-4 w-4" />
             )}

@@ -23,6 +23,9 @@ interface ThreadsPostData {
   thumbnail?: string;
 }
 
+const INFO_CACHE_TTL_MS = 60_000;
+const infoCache = new Map<string, { value: MediaInfo; expiresAt: number }>();
+
 function decodeHtmlValue(value: string): string {
   return value
     .replace(/&amp;/g, "&")
@@ -46,7 +49,10 @@ function metaContent(html: string, key: string): string | undefined {
 function urlsNearKey(html: string, key: string): string[] {
   const urls = new Set<string>();
   let position = 0;
-  while ((position = html.indexOf(key, position)) !== -1) {
+  // The page can contain hundreds of Relay references. The first few media
+  // entries are sufficient and avoid repeatedly scanning a large HTML payload.
+  let occurrences = 0;
+  while ((position = html.indexOf(key, position)) !== -1 && occurrences++ < 8) {
     const fragment = html.slice(position, position + 20_000);
     for (const match of fragment.matchAll(/https?(?::|%3A)(?:\\\/|%2F|\/){2}[^"'\\\s<>]+/gi)) {
       const value = decodeHtmlValue(match[0]).replace(/\\["']/g, "");
@@ -223,6 +229,9 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
     throw new ThreadsError("invalid_platform", "This is not a Threads URL.");
   }
 
+  const cached = infoCache.get(url);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+
   console.log(`Fetching Threads post data from: ${url}`);
 
   const data = await extractThreadsData(url);
@@ -262,7 +271,7 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
     });
   }
 
-  return {
+  const info: MediaInfo = {
     platform,
     url,
     title: data.title || "Threads Post",
@@ -272,6 +281,8 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
     isImage: false,
     formats,
   };
+  infoCache.set(url, { value: info, expiresAt: Date.now() + INFO_CACHE_TTL_MS });
+  return info;
 }
 
 /**

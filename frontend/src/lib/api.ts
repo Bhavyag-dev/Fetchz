@@ -6,12 +6,12 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").repla
  * POST /api/info — fetch media information for a given URL.
  * Returns title, available formats, thumbnail, etc.
  */
-export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
+export async function fetchMediaInfo(url: string, signal?: AbortSignal): Promise<MediaInfo> {
   const res = await fetch(`${API_BASE}/api/info`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
-    signal: AbortSignal.timeout(35_000),
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(35_000)]) : AbortSignal.timeout(35_000),
   });
 
   if (!res.ok) {
