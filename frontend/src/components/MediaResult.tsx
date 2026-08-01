@@ -17,9 +17,9 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
   const [previewFailed, setPreviewFailed] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
-  const previewUrl = videoFormats[0]
+  const previewUrl = info.videoUrl || (videoFormats[0]
     ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
-    : info.videoUrl;
+    : undefined);
 
   const handleDownload = (format: MediaFormat) => {
     const url = getDownloadUrl(info.url, format.id);
