@@ -13,12 +13,24 @@ function corsHeaders(origin: string | null): HeadersInit | null {
     .map((value) => value.trim().replace(/\/+$/, ""))
     .filter(Boolean);
 
-  const normalizedOrigin = origin?.trim().replace(/\/+$/, "") ?? "";
+  // If no Origin header is sent (SSR, direct request, or stripped by proxy/CDN)
+  if (!origin) {
+    const fallbackOrigin = configuredOrigins[0] || "*";
+    return {
+      "Access-Control-Allow-Origin": fallbackOrigin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Accept",
+      "Access-Control-Max-Age": "86400",
+      Vary: "Origin",
+    };
+  }
+
+  const normalizedOrigin = origin.trim().replace(/\/+$/, "");
 
   const isLocal = LOCAL_ORIGINS.has(normalizedOrigin);
   const isAllowed = configuredOrigins.includes(normalizedOrigin) || configuredOrigins.includes("*");
 
-  if (!normalizedOrigin || (!isLocal && !isAllowed)) {
+  if (!isLocal && !isAllowed) {
     console.warn(
       `[CORS Blocked] Origin "${origin}" is not allowed. ` +
       `Local: ${isLocal}, Configured: [${configuredOrigins.join(", ")}]. ` +
@@ -28,7 +40,7 @@ function corsHeaders(origin: string | null): HeadersInit | null {
   }
 
   return {
-    "Access-Control-Allow-Origin": origin!,
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Accept",
     "Access-Control-Max-Age": "86400",
