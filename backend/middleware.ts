@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const LOCAL_ORIGINS = new Set([
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "null", // Allow sandboxed frames (e.g., Lovable preview)
 ]);
 
 function corsHeaders(origin: string | null): HeadersInit | null {
