@@ -2,6 +2,8 @@
 
 Fetchz downloads publicly available media from YouTube, X, Instagram, and Pinterest. Paste a post URL, preview the media, choose a format, and download it.
 
+Link: https://fetchz.vercel.app/
+
 ## Supported platforms
 
 | Platform | Video | Audio | Images |

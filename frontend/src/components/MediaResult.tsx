@@ -15,6 +15,7 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
 
   const [tab, setTab] = useState<"video" | "audio">(videoFormats.length > 0 ? "video" : "audio");
   const [previewFailed, setPreviewFailed] = useState(false);
+  const [isVertical, setIsVertical] = useState(false);
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
   const previewUrl = videoFormats[0]
     ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
@@ -82,127 +83,161 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         </button>
       </div>
 
-      {/* Media Preview */}
-      {!info.isImage && !previewFailed && previewUrl && (
-        <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
-          <video
-            src={previewUrl}
-            controls
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            className="w-full max-h-72 object-contain bg-black"
-            onError={() => setPreviewFailed(true)}
-          />
-        </div>
-      )}
-
-      {/* Thumbnail fallback when no direct video URL */}
-      {!info.isImage && (!previewUrl || previewFailed) && info.thumbnail && (
-        <div className="mt-4 rounded-xl overflow-hidden border border-white/10 bg-black/40">
-          <img
-            src={info.thumbnail}
-            alt={info.title}
-            className="w-full max-h-56 object-contain bg-black"
-            onError={(e) => {
-              (e.target as HTMLImageElement).parentElement!.style.display = "none";
-            }}
-          />
-        </div>
-      )}
-
-      {/* Image-only post */}
-      {info.isImage && info.imageUrl && (
-        <div className="mt-4">
-          <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40 max-h-72">
-            <img
-              src={info.imageUrl}
-              alt={info.title}
-              className="w-full h-full object-contain bg-black"
-            />
-          </div>
-          <button
-            onClick={handleImageDownload}
-            className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black hover:opacity-90 transition font-schibsted"
-          >
-            <Download className="h-4 w-4" />
-            Save Image
-          </button>
-        </div>
-      )}
-
-      {/* Video/Audio formats */}
-      {!info.isImage && activeFormats.length > 0 && (
-        <>
-          {/* Tab switcher */}
-          {videoFormats.length > 0 && audioFormats.length > 0 && (
-            <div className="flex bg-white/10 rounded-lg p-0.5 border border-white/10 mt-4 w-fit">
-              <button
-                onClick={() => setTab("video")}
-                className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-semibold transition font-schibsted ${
-                  tab === "video"
-                    ? "bg-white text-black shadow-sm"
-                    : "text-white/70 hover:text-white"
-                }`}
-              >
-                <Video className="h-3.5 w-3.5" /> Video
-              </button>
-              <button
-                onClick={() => setTab("audio")}
-                className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-semibold transition font-schibsted ${
-                  tab === "audio"
-                    ? "bg-white text-black shadow-sm"
-                    : "text-white/70 hover:text-white"
-                }`}
-              >
-                <Music className="h-3.5 w-3.5" /> Audio
-              </button>
+      {/* Grid layout that adapts to vertical/horizontal video */}
+      <div className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-start" : "flex flex-col"}`}>
+        
+        {/* Media Preview Column */}
+        <div className={isVertical ? "mx-auto w-full max-w-[240px]" : "w-full"}>
+          {/* Media Preview */}
+          {!info.isImage && !previewFailed && previewUrl && (
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+              <video
+                src={previewUrl}
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-72 object-contain"}`}
+                onLoadedMetadata={(e) => {
+                  const video = e.currentTarget;
+                  if (video.videoWidth && video.videoHeight) {
+                    setIsVertical(video.videoHeight > video.videoWidth);
+                  }
+                }}
+                onError={() => setPreviewFailed(true)}
+              />
             </div>
           )}
 
-          {/* Format list */}
-          <div className="mt-3 space-y-1.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
-            <AnimatePresence mode="popLayout">
-              {activeFormats.map((format) => (
-                <motion.button
-                  key={format.id}
-                  layout
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  onClick={() => handleDownload(format)}
-                  className="group w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 px-4 py-3 transition"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/70 group-hover:text-white transition">
-                      {format.isVideo ? (
-                        <Video className="h-4 w-4" />
-                      ) : (
-                        <Music className="h-4 w-4" />
-                      )}
-                    </div>
-                    <span className="text-[13px] font-medium text-white/90 font-schibsted">
-                      {format.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {format.sizeBytes > 0 && (
-                      <span className="text-[11px] text-white/40 font-schibsted">
-                        {formatBytes(format.sizeBytes)}
-                      </span>
-                    )}
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 group-hover:bg-white group-hover:text-black transition">
-                      <Download className="h-3.5 w-3.5" />
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
-            </AnimatePresence>
-          </div>
-        </>
-      )}
+          {/* Thumbnail fallback when no direct video URL */}
+          {!info.isImage && (!previewUrl || previewFailed) && info.thumbnail && (
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+              <img
+                src={info.thumbnail}
+                alt={info.title}
+                className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-56 object-contain"}`}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (img.naturalWidth && img.naturalHeight) {
+                    setIsVertical(img.naturalHeight > img.naturalWidth);
+                  }
+                }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).parentElement!.style.display = "none";
+                }}
+              />
+            </div>
+          )}
+
+          {/* Image-only post */}
+          {info.isImage && info.imageUrl && (
+            <div>
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                <img
+                  src={info.imageUrl}
+                  alt={info.title}
+                  className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-72 object-contain"}`}
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth && img.naturalHeight) {
+                      setIsVertical(img.naturalHeight > img.naturalWidth);
+                    }
+                  }}
+                />
+              </div>
+              <button
+                onClick={handleImageDownload}
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-black hover:opacity-90 transition font-schibsted"
+              >
+                <Download className="h-4 w-4" />
+                Save Image
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Video/Audio formats Column */}
+        <div className="flex-1 w-full">
+          {!info.isImage && activeFormats.length > 0 && (
+            <>
+              {/* Tab switcher */}
+              {videoFormats.length > 0 && audioFormats.length > 0 && (
+                <div className="flex bg-white/10 rounded-lg p-0.5 border border-white/10 w-fit">
+                  <button
+                    onClick={() => setTab("video")}
+                    className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-semibold transition font-schibsted ${
+                      tab === "video"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    <Video className="h-3.5 w-3.5" /> Video
+                  </button>
+                  <button
+                    onClick={() => setTab("audio")}
+                    className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-semibold transition font-schibsted ${
+                      tab === "audio"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    <Music className="h-3.5 w-3.5" /> Audio
+                  </button>
+                </div>
+              )}
+
+              {/* Format list */}
+              <div className="mt-3 space-y-1.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+                <AnimatePresence mode="popLayout">
+                  {activeFormats.map((format) => (
+                    <motion.button
+                      key={format.id}
+                      layout
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 8 }}
+                      onClick={() => handleDownload(format)}
+                      className="group w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 px-4 py-3 transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/70 group-hover:text-white transition">
+                          {format.isVideo ? (
+                            <Video className="h-4 w-4" />
+                          ) : (
+                            <Music className="h-4 w-4" />
+                          )}
+                        </div>
+                        <span className="text-[13px] font-medium text-white/90 font-schibsted">
+                          {format.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {format.sizeBytes > 0 && (
+                          <span className="text-[11px] text-white/40 font-schibsted">
+                            {formatBytes(format.sizeBytes)}
+                          </span>
+                        )}
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 group-hover:bg-white group-hover:text-black transition">
+                          <Download className="h-3.5 w-3.5" />
+                        </div>
+                      </div>
+                    </motion.button>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
+
+          {/* No formats available */}
+          {!info.isImage && activeFormats.length === 0 && (
+            <div className="text-center text-[13px] text-white/50 font-schibsted py-4">
+              No {tab} formats available for this media.
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* No formats available */}
       {!info.isImage && activeFormats.length === 0 && (
