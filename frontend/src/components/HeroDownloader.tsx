@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchMediaInfo } from "../lib/api";
+import { fetchMediaInfo, API_BASE } from "../lib/api";
 import type { MediaInfo } from "../lib/types";
 import { MediaResult } from "./MediaResult";
 
@@ -117,7 +117,25 @@ export function HeroDownloader() {
       setStatus("success");
     } catch (err) {
       if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError")) return;
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      let message = err instanceof Error ? err.message : "Something went wrong";
+      
+      // Check for common connection/CORS errors
+      const isNetworkError = message.toLowerCase().includes("failed to fetch") || 
+                             message.toLowerCase().includes("networkerror") ||
+                             message.toLowerCase().includes("load failed");
+                             
+      if (isNetworkError) {
+        if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
+          if (API_BASE.includes("localhost") || API_BASE.includes("127.0.0.1")) {
+            message = `Failed to connect: Frontend is configured to call a local API (localhost). Update VITE_API_URL on Vercel to your Render service URL (e.g., https://your-app.onrender.com) and trigger a redeploy.`;
+          } else {
+            message = `Failed to connect to API: "${API_BASE}". Ensure your Render backend is active and that your Vercel URL is added to the FRONTEND_ORIGIN environment variable on Render.`;
+          }
+        } else {
+          message = `Failed to connect: Could not reach the backend API at "${API_BASE}". Make sure the backend server is running locally (npm run dev).`;
+        }
+      }
+      
       setErrorMessage(message);
       setStatus("error");
     } finally {

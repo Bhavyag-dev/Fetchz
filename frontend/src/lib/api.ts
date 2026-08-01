@@ -1,6 +1,6 @@
 import type { MediaInfo, ApiError } from "./types";
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").replace(/\/+$/, "");
+export const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").replace(/\/+$/, "");
 
 /**
  * POST /api/info — fetch media information for a given URL.
