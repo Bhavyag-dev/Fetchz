@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, Video, Music, Image as ImageIcon, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MediaInfo, MediaFormat } from "../lib/types";
-import { getDownloadUrl } from "../lib/api";
+import { getDownloadUrl, getThumbnailUrl } from "../lib/api";
 
 interface MediaResultProps {
   info: MediaInfo;
@@ -14,14 +14,23 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
   const audioFormats = info.formats.filter((f) => f.isAudio);
 
   const [tab, setTab] = useState<"video" | "audio">(videoFormats.length > 0 ? "video" : "audio");
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
 
   useEffect(() => {
+    setPreviewFailed(false);
+    setThumbnailFailed(false);
     setIsVertical(false);
     setTab(videoFormats.length > 0 ? "video" : "audio");
   }, [info.url]);
 
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
+  // Use /api/download?inline=true which proxies via Cobalt — works for all platforms.
+  // Direct CDN URLs (Twitter/Instagram) block server-side proxy requests.
+  const previewUrl = videoFormats[0]
+    ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
+    : undefined;
 
   const handleDownload = (format: MediaFormat) => {
     const url = getDownloadUrl(info.url, format.id);
@@ -49,7 +58,7 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         {info.thumbnail && (
           <div className="shrink-0 w-24 h-16 rounded-xl overflow-hidden bg-white/5 border border-white/10">
             <img
-              src={info.thumbnail}
+              src={`${getThumbnailUrl(info.url).replace(/\?url=.*$/, "")}?src=${encodeURIComponent(info.thumbnail)}`}
               alt="Thumbnail"
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -90,21 +99,46 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         
         {/* Media Preview Column */}
         <div className={isVertical ? "mx-auto w-full max-w-[240px]" : "w-full"}>
-          {/* Thumbnail Preview for video posts */}
-          {!info.isImage && info.thumbnail && (
+          {!info.isImage && !previewFailed && previewUrl && (
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+              <video
+                key={previewUrl}
+                src={previewUrl}
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-72 object-contain"}`}
+                onLoadedMetadata={(e) => {
+                  const video = e.currentTarget;
+                  if (video.videoWidth && video.videoHeight) {
+                    setIsVertical(video.videoHeight > video.videoWidth);
+                  }
+                }}
+                onError={() => {
+                  setPreviewFailed(true);
+                }}
+              />
+            </div>
+          )}
+
+          {/* 2. Thumbnail Fallback (when video fails or no video URL) */}
+          {!info.isImage && (previewFailed || !previewUrl) && info.thumbnail && !thumbnailFailed && (
             <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40 relative">
               <img
-                src={info.thumbnail}
+                src={`${getThumbnailUrl(info.url).replace(/\?url=.*$/, "")}?src=${encodeURIComponent(info.thumbnail)}`}
                 alt={info.title}
-                className={`w-full bg-black object-cover ${isVertical ? "aspect-[9/16] max-h-[420px]" : "max-h-72"}`}
+                className={`w-full bg-black object-contain ${isVertical ? "aspect-[9/16] max-h-[420px]" : "max-h-72"}`}
                 onLoad={(e) => {
                   const img = e.currentTarget;
                   if (img.naturalWidth && img.naturalHeight) {
                     setIsVertical(img.naturalHeight > img.naturalWidth);
                   }
                 }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).parentElement!.style.display = "none";
+                onError={() => {
+                  setThumbnailFailed(true);
                 }}
               />
               {/* Play icon overlay */}
@@ -115,6 +149,14 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
                   </svg>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 3. Placeholder Fallback (when both video and thumbnail fail) */}
+          {!info.isImage && (previewFailed || !previewUrl) && (thumbnailFailed || !info.thumbnail) && (
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 flex flex-col items-center justify-center py-12 px-4 text-center">
+              <Video className="h-10 w-10 text-white/30 mb-2" />
+              <p className="text-xs text-white/40 font-schibsted">{info.title}</p>
             </div>
           )}
 

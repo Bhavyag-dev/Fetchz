@@ -120,19 +120,52 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
     throw new CobaltError("network_error", `Failed to connect to Cobalt API: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
-  // Handle picker responses (multiple items)
+  // Handle picker responses (multiple items - e.g. Instagram carousel)
   if (previewProbe.status === "picker") {
     const p = previewProbe as CobaltPickerResponse;
     const firstItem = p.picker[0];
+    const isImage = firstItem?.type === "photo";
+
+    // Build format options - for picker, we offer the individual items as options
+    const pickerFormats: MediaFormat[] = p.picker.map((item, i) => ({
+      id: `picker-${i}`,
+      label: item.type === "photo"
+        ? `Image ${i + 1}`
+        : item.type === "gif"
+          ? `GIF ${i + 1}`
+          : `Video ${i + 1}`,
+      ext: item.type === "photo" ? "jpg" : item.type === "gif" ? "gif" : "mp4",
+      sizeBytes: 0,
+      isVideo: item.type !== "photo",
+      isAudio: false,
+      thumbnail: item.thumb,
+    }));
+
+    // Also add audio formats for video picker items
+    const audioFormats: MediaFormat[] = [];
+    if (!isImage) {
+      for (const bitrate of AUDIO_BITRATES) {
+        audioFormats.push({
+          id: `audio-${bitrate}`,
+          label: `MP3 · ${bitrate}kbps`,
+          ext: "mp3",
+          sizeBytes: 0,
+          isVideo: false,
+          isAudio: true,
+          abr: parseInt(bitrate),
+        });
+      }
+    }
+
     return {
       platform,
       url,
-      title: "Media",
-      isImage: firstItem?.type === "photo",
+      title: `${platform.charAt(0).toUpperCase() + platform.slice(1)} Media`,
+      isImage,
       thumbnail: firstItem?.thumb || firstItem?.url,
-      imageUrl: firstItem?.type === "photo" ? firstItem?.url : undefined,
-      videoUrl: firstItem?.type !== "photo" ? firstItem?.url : undefined,
-      formats: [],
+      imageUrl: isImage ? firstItem?.url : undefined,
+      videoUrl: !isImage ? firstItem?.url : undefined,
+      formats: [...pickerFormats, ...audioFormats],
     };
   }
 
@@ -168,18 +201,24 @@ export async function fetchMediaInfo(url: string): Promise<MediaInfo> {
     });
   }
 
-  // Extract title from filename 
+  // Extract a clean title from filename
   const filename = tunnelResponse.filename ?? "";
-  const title = filename
+  const rawTitle = filename
     .replace(/\.[a-z0-9]{2,4}$/i, "")
     .replace(/[-_]/g, " ")
-    .trim() || "Video";
+    .trim();
+  // If the title is just "platform <id>" or all-numeric, use a nicer fallback
+  const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+  const title = rawTitle && !/^\w+\s+\d{10,}/.test(rawTitle) && !/^\d+$/.test(rawTitle)
+    ? rawTitle
+    : `${platformName} Video`;
 
   return {
     platform,
     url,
     title,
     isImage: false,
+    thumbnail: undefined, // Cobalt doesn't return a thumbnail for single videos
     videoUrl, // Store the actual video URL for preview
     formats: [...videoFormats, ...audioFormats],
   };
@@ -190,15 +229,19 @@ export async function getDownloadUrl(
   formatId: string
 ): Promise<{ downloadUrl: string; filename: string }> {
   const isAudio = formatId.startsWith("audio-");
+  const isPicker = formatId.startsWith("picker-");
   const quality = formatId.split("-")[1] ?? "1080";
 
-  const body: CobaltRequest = {
-    url,
-    filenameStyle: "pretty",
-    ...(isAudio
-      ? { downloadMode: "audio", audioFormat: "mp3", audioBitrate: quality }
-      : { downloadMode: "auto", videoQuality: quality }),
-  };
+  let body: CobaltRequest;
+
+  if (isPicker) {
+    // For picker items, just fetch the first item at best quality
+    body = { url, downloadMode: "auto", videoQuality: "1080", filenameStyle: "pretty" };
+  } else if (isAudio) {
+    body = { url, downloadMode: "audio", audioFormat: "mp3", audioBitrate: quality, filenameStyle: "pretty" };
+  } else {
+    body = { url, downloadMode: "auto", videoQuality: quality, filenameStyle: "pretty" };
+  }
 
   const result = await cobaltFetch(body);
 
@@ -209,9 +252,12 @@ export async function getDownloadUrl(
 
   if (result.status === "picker") {
     const p = result as CobaltPickerResponse;
-    const item = p.picker[0];
+    // For picker-N, get the Nth item; otherwise get first
+    const pickerIndex = isPicker ? parseInt(formatId.split("-")[1] ?? "0") : 0;
+    const item = p.picker[pickerIndex] ?? p.picker[0];
     if (!item) throw new CobaltError("no_media", "No media found in this post.");
-    return { downloadUrl: item.url, filename: "fetchz-media.jpg" };
+    const ext = item.type === "photo" ? "jpg" : item.type === "gif" ? "gif" : "mp4";
+    return { downloadUrl: item.url, filename: `fetchz-media.${ext}` };
   }
 
   const r = result as CobaltTunnelResponse;
