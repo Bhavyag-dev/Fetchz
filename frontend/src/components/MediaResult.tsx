@@ -118,26 +118,6 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
             </div>
           )}
 
-          {/* Thumbnail fallback when no direct video URL */}
-          {!info.isImage && (!previewUrl || previewFailed) && info.thumbnail && (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
-              <img
-                src={info.thumbnail}
-                alt={info.title}
-                className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-56 object-contain"}`}
-                onLoad={(e) => {
-                  const img = e.currentTarget;
-                  if (img.naturalWidth && img.naturalHeight) {
-                    setIsVertical(img.naturalHeight > img.naturalWidth);
-                  }
-                }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).parentElement!.style.display = "none";
-                }}
-              />
-            </div>
-          )}
-
           {/* Image-only post */}
           {info.isImage && info.imageUrl && (
             <div>
