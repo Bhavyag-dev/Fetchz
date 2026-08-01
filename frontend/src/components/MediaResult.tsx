@@ -14,19 +14,14 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
   const audioFormats = info.formats.filter((f) => f.isAudio);
 
   const [tab, setTab] = useState<"video" | "audio">(videoFormats.length > 0 ? "video" : "audio");
-  const [previewFailed, setPreviewFailed] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
 
   useEffect(() => {
-    setPreviewFailed(false);
     setIsVertical(false);
     setTab(videoFormats.length > 0 ? "video" : "audio");
   }, [info.url]);
 
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
-  const previewUrl = info.videoUrl || (videoFormats[0]
-    ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
-    : undefined);
 
   const handleDownload = (format: MediaFormat) => {
     const url = getDownloadUrl(info.url, format.id);
@@ -95,26 +90,31 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         
         {/* Media Preview Column */}
         <div className={isVertical ? "mx-auto w-full max-w-[240px]" : "w-full"}>
-          {/* Media Preview */}
-          {!info.isImage && !previewFailed && previewUrl && (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
-              <video
-                src={previewUrl}
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-72 object-contain"}`}
-                onLoadedMetadata={(e) => {
-                  const video = e.currentTarget;
-                  if (video.videoWidth && video.videoHeight) {
-                    setIsVertical(video.videoHeight > video.videoWidth);
+          {/* Thumbnail Preview for video posts */}
+          {!info.isImage && info.thumbnail && (
+            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40 relative">
+              <img
+                src={info.thumbnail}
+                alt={info.title}
+                className={`w-full bg-black object-cover ${isVertical ? "aspect-[9/16] max-h-[420px]" : "max-h-72"}`}
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  if (img.naturalWidth && img.naturalHeight) {
+                    setIsVertical(img.naturalHeight > img.naturalWidth);
                   }
                 }}
-                onError={() => setPreviewFailed(true)}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).parentElement!.style.display = "none";
+                }}
               />
+              {/* Play icon overlay */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20">
+                  <svg className="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
             </div>
           )}
 
