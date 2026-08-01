@@ -6,17 +6,28 @@ const LOCAL_ORIGINS = new Set([
 ]);
 
 function corsHeaders(origin: string | null): HeadersInit | null {
-  const configuredOrigins = (process.env.FRONTEND_ORIGIN ?? "")
+  const rawOriginEnv = process.env.FRONTEND_ORIGIN ?? "";
+  const configuredOrigins = rawOriginEnv
     .split(",")
-    .map((value) => value.trim())
+    .map((value) => value.trim().replace(/\/+$/, ""))
     .filter(Boolean);
 
-  if (!origin || (!LOCAL_ORIGINS.has(origin) && !configuredOrigins.includes(origin))) {
+  const normalizedOrigin = origin?.trim().replace(/\/+$/, "") ?? "";
+
+  const isLocal = LOCAL_ORIGINS.has(normalizedOrigin);
+  const isAllowed = configuredOrigins.includes(normalizedOrigin) || configuredOrigins.includes("*");
+
+  if (!normalizedOrigin || (!isLocal && !isAllowed)) {
+    console.warn(
+      `[CORS Blocked] Origin "${origin}" is not allowed. ` +
+      `Local: ${isLocal}, Configured: [${configuredOrigins.join(", ")}]. ` +
+      `Raw FRONTEND_ORIGIN: "${rawOriginEnv}"`
+    );
     return null;
   }
 
   return {
-    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Origin": origin!,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Accept",
     "Access-Control-Max-Age": "86400",
