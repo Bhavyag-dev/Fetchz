@@ -28,7 +28,8 @@ function corsHeaders(origin: string | null): HeadersInit | null {
   const normalizedOrigin = origin.trim().replace(/\/+$/, "");
 
   const isLocal = LOCAL_ORIGINS.has(normalizedOrigin);
-  const isAllowed = configuredOrigins.includes(normalizedOrigin) || configuredOrigins.includes("*");
+  const isVercel = normalizedOrigin.endsWith(".vercel.app") || normalizedOrigin.includes("vercel.app");
+  const isAllowed = isVercel || configuredOrigins.includes(normalizedOrigin) || configuredOrigins.includes("*");
 
   if (!isLocal && !isAllowed) {
     console.warn(
