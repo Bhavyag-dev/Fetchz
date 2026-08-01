@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, Video, Music, Image as ImageIcon, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MediaInfo, MediaFormat } from "../lib/types";
@@ -16,6 +16,13 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
   const [tab, setTab] = useState<"video" | "audio">(videoFormats.length > 0 ? "video" : "audio");
   const [previewFailed, setPreviewFailed] = useState(false);
   const [isVertical, setIsVertical] = useState(false);
+
+  useEffect(() => {
+    setPreviewFailed(false);
+    setIsVertical(false);
+    setTab(videoFormats.length > 0 ? "video" : "audio");
+  }, [info.url]);
+
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
   const previewUrl = info.videoUrl || (videoFormats[0]
     ? `${getDownloadUrl(info.url, videoFormats[0].id)}&inline=true`
