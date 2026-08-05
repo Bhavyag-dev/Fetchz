@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 const LOCAL_ORIGINS = new Set([
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "null", // Allow sandboxed frames (e.g., Lovable preview)
 ]);
 

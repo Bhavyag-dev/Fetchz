@@ -32,6 +32,57 @@ Browser → Vercel frontend → Render API → media provider
 - `backend/` is a Next.js API. It is deployed to Render as a Docker web service because YouTube support requires `yt-dlp` and `FFmpeg`.
 - The frontend calls the API using the build-time `VITE_API_URL` value.
 
+## Tech Stack & Languages
+
+Fetchz is built using a modern, performant, and type-safe stack:
+
+### Languages
+- **TypeScript & JavaScript**: Used end-to-end across both frontend and backend for robust type safety and developer velocity.
+- **HTML & CSS**: Semantic markup styled with modern layout systems.
+- **Python**: Installed in the backend environment for executing CLI utilities and media extractors.
+- **Docker**: Container configuration for consistent backend deployments.
+
+### Frontend
+- **Framework**: [React 19](https://react.dev/) powered by [TanStack Start](https://tanstack.com/router/v1/docs/start/overview) (Vite-based meta-framework) for high-performance routing and state management.
+- **Routing & Querying**: [TanStack Router](https://tanstack.com/router) for type-safe routing, and [TanStack Query (React Query)](https://tanstack.com/query) for efficient client-side data fetching and caching.
+- **Styling & UI**: 
+  - [Tailwind CSS v4](https://tailwindcss.com/) for utility-first styling.
+  - [Framer Motion](https://www.framer.com/motion/) for fluid UI animations and micro-interactions.
+  - [Radix UI](https://www.radix-ui.com/) for accessible, headless primitives (collapsible lists, dialogs, dropdowns).
+  - [Lucide React](https://lucide.dev/) for modern iconography.
+
+### Backend
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router) deployed as a standalone Node.js API server.
+- **Media Processing Core**:
+  - **[yt-dlp](https://github.com/yt-dlp/yt-dlp)**: Next-generation command-line media downloader used to fetch metadata and stream YouTube content.
+  - **[FFmpeg](https://ffmpeg.org/)**: Used for merging separate audio and video streams (e.g. 1080p YouTube video + audio track) and remuxing formats on the fly.
+  - **Cobalt API Integration**: Serves as the primary provider for X (Twitter), Instagram, and Pinterest downloads, with a `yt-dlp` fallback mechanism.
+
+## AI-Native & Scratch-Driven Development
+
+This project represents a modern paradigm of software engineering—**100% built and maintained using AI coding agents from a blank slate (scratch-driven).**
+
+### AI Tools & Agents Used
+- **Antigravity (Google DeepMind)**: The primary agentic coding assistant used to design, implement, and refactor the entire repository.
+- **Gemini 3.5 Models**: Used for reasoning, planning, code generation, and test validation.
+- **Specialized AI Tools**:
+  - **Terminal / Shell Command Executors**: Autonomously ran builds, container tests, and package operations.
+  - **Browser Validation Subagents**: Automatically ran UI tests in a simulated browser, verifying the frontend flow and recording video artifacts to ensure visual and functional correctness.
+  - **Image Generator (Text-to-Image)**: Used to mock visual assets and UI elements during prototyping.
+
+### Knowledge Files & Custom Agentic Skills
+To achieve high-quality results, the project leverages custom agentic rules and skills:
+- **[AGENTS.md](file:///Users/bhavyag/Projects/Fetchz/AGENTS.md)**: A repository-level knowledge file detailing the directory layout and defining context boundaries to help future AI developers understand the codebase instantly.
+- **Agentic Skills**: Utilized advanced rules for:
+  - *Accidental Data Loss Prevention*: Preventing critical command execution without safety prompts.
+  - *Resource Attribution*: Labeling commands and tracking resource utilization.
+  - *Dependency Management*: Safeguarding dependencies to prevent package version mismatches.
+
+### Context Window Optimization
+Because large language models operate within a finite context window, we designed the repo to support **Context Window Scoping**:
+- The repository is split into distinct logical boundaries (**Frontend UI Context**, **Backend API Context**, and **Build & Config Context**).
+- By referencing only the files in the active scope (as mapped in `AGENTS.md`), we drastically reduce token overhead and keep the LLM context window clean, ensuring faster responses and zero context drift during updates.
+
 ## Deploy to Vercel and Render
 
 Deploy the backend first, then use its public HTTPS URL when deploying the frontend.
