@@ -1,10 +1,10 @@
 
 
-# 🤖 Project Knowledge & AI Context Window
+# Project Knowledge & AI Context Window
 
 This repository is **AI-native**, built and refactored from scratch using AI. To ensure that AI agents (such as Gemini, Claude, or GPT) can work on this project efficiently, this section defines the codebase architecture, file mapping, and context scopes.
 
-## 🧭 Codebase Context Windows (Scopes)
+## Codebase Context Windows (Scopes)
 
 When performing a task, load only the files relevant to the active context window to minimize token usage:
 

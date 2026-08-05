@@ -1,5 +1,10 @@
 # Fetchz
 
+> [!NOTE]
+> **AI-Native Codebase**: This codebase has been built and written entirely using AI from scratch.
+> To help AI agents work efficiently, the repository context and instructions are consolidated in the primary knowledge file:
+> - **AI Rules & Context Guide**: [AGENTS.md](file:///Users/bhavyag/Projects/Fetchz/AGENTS.md)
+
 Fetchz downloads publicly available media from YouTube, X, Instagram, and Pinterest. Paste a post URL, preview the media, choose a format, and download it.
 
 Link: https://fetchz.vercel.app/
