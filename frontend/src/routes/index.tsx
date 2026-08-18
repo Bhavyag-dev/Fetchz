@@ -6,6 +6,7 @@ import {
   Shield,
   Infinity as InfinityIcon,
   Star,
+  Check,
 } from "lucide-react";
 import { VideoBackground } from "../components/VideoBackground";
 import { NavBar } from "../components/NavBar";
@@ -233,6 +234,105 @@ function Index() {
                 <p className="mt-3 text-[14.5px] leading-relaxed text-white/60">{item.a}</p>
               </details>
             ))}
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="mx-auto mt-32 w-full max-w-5xl">
+          <div className="text-center font-fustat">
+            <h2 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.035em] sm:text-5xl text-white">
+              Simple, transparent <span className="italic font-normal">pricing.</span>
+            </h2>
+            <p className="mt-3 text-base text-white/60 max-w-lg mx-auto">
+              Start downloading for free today or upgrade to Pro for dedicated high-speed servers and batch processing.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 md:grid-cols-2 items-stretch">
+            {/* Free Plan */}
+            <div className="rounded-[28px] bg-black/30 backdrop-blur-md border border-white/10 p-8 sm:p-10 flex flex-col justify-between hover:border-white/20 transition font-fustat">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/60">Free Plan</span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-white/70">Always Free</span>
+                </div>
+                <div className="mt-6 flex items-baseline gap-1">
+                  <span className="text-5xl font-extrabold tracking-tight text-white">$0</span>
+                  <span className="text-sm text-white/50">/ forever</span>
+                </div>
+                <p className="mt-2 text-sm text-white/60">Essential high-speed features for everyday media downloads.</p>
+
+                <ul className="mt-8 space-y-3.5 text-sm text-white/80">
+                  {[
+                    "Unlimited video & audio grabs",
+                    "Full HD 1080p & 4K video quality",
+                    "High bitrate MP3 audio extraction",
+                    "YouTube, X, Instagram & Pinterest",
+                    "No account or sign-up required",
+                  ].map((feat) => (
+                    <li key={feat} className="flex items-center gap-3">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+                        <Check className="h-3 w-3" />
+                      </div>
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <a
+                href="#downloader"
+                className="mt-10 block w-full rounded-2xl border border-white/20 bg-white/10 py-3.5 text-center text-sm font-semibold text-white hover:bg-white/20 transition shadow-sm"
+              >
+                Start Downloading Free
+              </a>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="relative rounded-[28px] bg-gradient-to-b from-white/15 via-black/40 to-black/60 backdrop-blur-md border border-white/25 p-8 sm:p-10 flex flex-col justify-between shadow-2xl hover:border-white/40 transition font-fustat overflow-hidden">
+              {/* Glowing accent background blur */}
+              <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-[rgba(90,225,76,0.15)] blur-3xl pointer-events-none" />
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-white">Pro Pass</span>
+                  <span className="rounded-full bg-[rgba(90,225,76,0.9)] px-3 py-1 text-[10px] font-bold text-black uppercase tracking-wider shadow-sm">
+                    Most Popular
+                  </span>
+                </div>
+                <div className="mt-6 flex items-baseline gap-1">
+                  <span className="text-5xl font-extrabold tracking-tight text-white">$4.99</span>
+                  <span className="text-sm text-white/50">/ month</span>
+                </div>
+                <p className="mt-2 text-sm text-white/70">Ultra-fast dedicated servers, batch downloads & priority queue.</p>
+
+                <ul className="mt-8 space-y-3.5 text-sm text-white/90">
+                  {[
+                    "Everything in Free Plan",
+                    "Cloud Vault: Save & organize media in custom collections",
+                    "Stream & access your saved library anywhere on Fetchz",
+                    "Ultra-fast dedicated proxy servers",
+                    "Priority YouTube 4K & 8K queueing",
+                    "Batch multi-link downloader",
+                    "24/7 priority support",
+                  ].map((feat) => (
+                    <li key={feat} className="flex items-center gap-3">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(90,225,76,0.9)] text-black">
+                        <Check className="h-3 w-3 stroke-[3]" />
+                      </div>
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <a
+                href="#downloader"
+                className="mt-10 block w-full rounded-2xl bg-[rgba(90,225,76,0.9)] hover:bg-[rgba(90,225,76,1)] py-3.5 text-center text-sm font-bold text-black transition shadow-lg hover:shadow-[0_0_24px_rgba(90,225,76,0.4)]"
+              >
+                Upgrade to Pro
+              </a>
+            </div>
           </div>
         </section>
 

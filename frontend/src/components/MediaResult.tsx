@@ -16,14 +16,16 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
   const [tab, setTab] = useState<"video" | "audio">(videoFormats.length > 0 ? "video" : "audio");
   const [previewFailed, setPreviewFailed] = useState(false);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
-  const [isVertical, setIsVertical] = useState(false);
+  const [mediaRatio, setMediaRatio] = useState<number | null>(null);
 
   useEffect(() => {
     setPreviewFailed(false);
     setThumbnailFailed(false);
-    setIsVertical(false);
+    setMediaRatio(null);
     setTab(videoFormats.length > 0 ? "video" : "audio");
   }, [info.url]);
+
+  const isVertical = mediaRatio !== null ? mediaRatio < 1 : false;
 
   const activeFormats = tab === "video" ? videoFormats : audioFormats;
   // Use /api/download?inline=true which proxies via Cobalt — works for all platforms.
@@ -94,13 +96,13 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         </button>
       </div>
 
-      {/* Grid layout that adapts to vertical/horizontal video */}
-      <div className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-stretch" : "flex flex-col"}`}>
+      {/* Grid layout that adapts dynamically to media aspect ratio */}
+      <div className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-start" : "flex flex-col gap-4"}`}>
         
         {/* Media Preview Column */}
         <div className={isVertical ? "mx-auto w-full max-w-[240px]" : "w-full"}>
           {!info.isImage && !previewFailed && previewUrl && (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+            <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg">
               <video
                 key={previewUrl}
                 src={previewUrl}
@@ -110,11 +112,11 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
                 loop
                 playsInline
                 preload="auto"
-                className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-72 object-contain"}`}
+                className={`w-full block object-cover rounded-xl ${isVertical ? "max-h-[400px]" : "max-h-[340px]"}`}
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   if (video.videoWidth && video.videoHeight) {
-                    setIsVertical(video.videoHeight > video.videoWidth);
+                    setMediaRatio(video.videoWidth / video.videoHeight);
                   }
                 }}
                 onError={() => {
@@ -126,15 +128,15 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
 
           {/* 2. Thumbnail Fallback (when video fails or no video URL) */}
           {!info.isImage && (previewFailed || !previewUrl) && info.thumbnail && !thumbnailFailed && (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40 relative">
+            <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg relative">
               <img
                 src={`${getThumbnailUrl(info.url).replace(/\?url=.*$/, "")}?src=${encodeURIComponent(info.thumbnail)}`}
                 alt={info.title}
-                className={`w-full bg-black object-contain ${isVertical ? "aspect-[9/16] max-h-[420px]" : "max-h-72"}`}
+                className={`w-full block object-cover rounded-xl ${isVertical ? "max-h-[400px]" : "max-h-[340px]"}`}
                 onLoad={(e) => {
                   const img = e.currentTarget;
                   if (img.naturalWidth && img.naturalHeight) {
-                    setIsVertical(img.naturalHeight > img.naturalWidth);
+                    setMediaRatio(img.naturalWidth / img.naturalHeight);
                   }
                 }}
                 onError={() => {
@@ -163,15 +165,15 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
           {/* Image-only post */}
           {info.isImage && info.imageUrl && (
             <div>
-              <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40">
+              <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg">
                 <img
                   src={info.imageUrl}
                   alt={info.title}
-                  className={`w-full bg-black ${isVertical ? "aspect-[9/16] max-h-[420px] object-contain" : "max-h-72 object-contain"}`}
+                  className={`w-full block object-cover rounded-xl ${isVertical ? "max-h-[400px]" : "max-h-[340px]"}`}
                   onLoad={(e) => {
                     const img = e.currentTarget;
                     if (img.naturalWidth && img.naturalHeight) {
-                      setIsVertical(img.naturalHeight > img.naturalWidth);
+                      setMediaRatio(img.naturalWidth / img.naturalHeight);
                     }
                   }}
                 />
@@ -218,7 +220,7 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
               )}
 
               {/* Format list */}
-              <div className="mt-3 flex-1 min-h-0 space-y-1.5 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
+              <div className="mt-3 flex-1 min-h-0 space-y-1.5 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
                 <AnimatePresence mode="popLayout">
                   {activeFormats.map((format) => (
                     <motion.button
