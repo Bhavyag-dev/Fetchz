@@ -95,7 +95,7 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
       </div>
 
       {/* Grid layout that adapts to vertical/horizontal video */}
-      <div className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-start" : "flex flex-col"}`}>
+      <div className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-stretch" : "flex flex-col"}`}>
         
         {/* Media Preview Column */}
         <div className={isVertical ? "mx-auto w-full max-w-[240px]" : "w-full"}>
@@ -188,12 +188,12 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
         </div>
 
         {/* Video/Audio formats Column */}
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full flex flex-col min-h-0">
           {!info.isImage && activeFormats.length > 0 && (
             <>
               {/* Tab switcher */}
               {videoFormats.length > 0 && audioFormats.length > 0 && (
-                <div className="flex bg-white/10 rounded-lg p-0.5 border border-white/10 w-fit">
+                <div className="flex bg-white/10 rounded-lg p-0.5 border border-white/10 w-fit shrink-0">
                   <button
                     onClick={() => setTab("video")}
                     className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-semibold transition font-schibsted ${
@@ -218,7 +218,7 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
               )}
 
               {/* Format list */}
-              <div className="mt-3 space-y-1.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+              <div className="mt-3 flex-1 min-h-0 space-y-1.5 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
                 <AnimatePresence mode="popLayout">
                   {activeFormats.map((format) => (
                     <motion.button
