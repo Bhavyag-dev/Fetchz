@@ -149,7 +149,7 @@ export function HeroDownloader() {
         {/* Top Row */}
         <div className="flex items-center justify-between text-white font-schibsted font-medium text-[12px]">
           <div className="flex items-center gap-2">
-            <span>Unlimited downloads</span>
+            <span>Unlimited 4K downloads &amp; high-speed saves</span>
             <button className="rounded bg-[rgba(90,225,76,0.89)] hover:bg-[rgba(90,225,76,1)] px-2 py-0.5 text-[10px] font-bold text-black uppercase tracking-wider transition">
               Upgrade
             </button>

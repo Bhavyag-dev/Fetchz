@@ -4,6 +4,7 @@ import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 const navItems = [
   { title: "Features", href: "#features" },
   { title: "Platforms", href: "#platforms" },
+  { title: "Pricing", href: "#pricing" },
   { title: "FAQ", href: "#faq" },
 ];
 
@@ -33,22 +34,25 @@ export function NavBar() {
           boxShadow: scrolled ? "0 8px 32px rgba(0,0,0,0.5)" : "0 2px 12px rgba(0,0,0,0.2)",
           paddingLeft: scrolled ? (isDesktop ? "1.5rem" : "1rem") : "1.25rem",
           paddingRight: scrolled ? (isDesktop ? "1.5rem" : "1rem") : "1.25rem",
-          maxWidth: scrolled ? (isDesktop ? "38rem" : "90%") : "72rem",
+          maxWidth: scrolled ? (isDesktop ? "42rem" : "90%") : "72rem",
         }}
         style={{ marginLeft: "auto", marginRight: "auto" }}
         transition={{ type: "spring", stiffness: 120, damping: 22 }}
-        className="pointer-events-auto w-full flex items-center justify-between py-3 bg-black/40 backdrop-blur-md border border-white/10 font-schibsted text-white"
+        className="pointer-events-auto w-full flex items-center justify-between py-3 bg-black/40 backdrop-blur-md border border-white/10 font-fustat text-white"
         onMouseLeave={() => setHovered(null)}
       >
         {/* Logo */}
-        <a href="/" className="shrink-0" aria-label="Fetchz home">
-          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white">
+        <a href="/" className="shrink-0 flex items-center gap-2.5 group" aria-label="Fetchz home">
+          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white group-hover:scale-105 transition-transform duration-200 shadow-md">
             <img
               src="/assets/fetchz-logo.png"
-              alt=""
+              alt="Fetchz logo"
               className="h-6 w-6 object-contain"
             />
           </div>
+          <span className="font-fustat text-[19px] font-extrabold tracking-tight bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
+            Fetchz
+          </span>
         </a>
 
         {/* Nav links */}
