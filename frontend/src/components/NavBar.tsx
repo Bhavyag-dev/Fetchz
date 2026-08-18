@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import LiquidCarveButton from "./LiquidCarveButton";
 
 const navItems = [
   { title: "Features", href: "#features" },
@@ -78,13 +79,19 @@ export function NavBar() {
           {/* Separator */}
           <div className="h-4 w-px bg-white/20 mx-2" />
 
-          {/* CTA */}
-          <a
-            href="#downloader"
-            className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black hover:opacity-90 transition"
-          >
-            Get started
-          </a>
+          {/* CTA Liquid Carve Button */}
+          <LiquidCarveButton
+            label="Get started"
+            link="/login"
+            newTab={false}
+            fill="#FFFFFF"
+            textColor="#000000"
+            blob={{ color: "rgba(90, 225, 76, 1)", size: 36, smoothness: 40 }}
+            font={{ fontFamily: "inherit", fontWeight: 700, fontSize: 14 }}
+            padding="11px 22px"
+            rounded={100}
+            className="shrink-0 font-fustat shadow-md hover:scale-[1.03] active:scale-[0.97] transition-transform duration-150"
+          />
         </div>
       </motion.nav>
     </div>
