@@ -1,5 +1,7 @@
 # Fetchz
 
+[![launch with diploi badge](https://diploi.com/launch.svg)](https://diploi.com/launch/Bhavyag-dev/Fetchz)
+
 > [!NOTE]
 > **AI-Native Codebase**: This codebase has been built and written entirely using AI from scratch.
 > To help AI agents work efficiently, the repository context and instructions are consolidated in the primary knowledge file:
@@ -83,11 +85,39 @@ Because large language models operate within a finite context window, we designe
 - The repository is split into distinct logical boundaries (**Frontend UI Context**, **Backend API Context**, and **Build & Config Context**).
 - By referencing only the files in the active scope (as mapped in `AGENTS.md`), we drastically reduce token overhead and keep the LLM context window clean, ensuring faster responses and zero context drift during updates.
 
-## Deploy to Vercel and Render
+## Deployment
+
+### Option 1: Deploy with Diploi
+
+[![launch with diploi button](https://diploi.com/launch-big.svg)](https://diploi.com/launch/Bhavyag-dev/Fetchz)
+
+1. **Launch the project**
+
+   Click the launch button above to create a new Diploi deployment for Fetchz.
+   A successful import in Diploi should contain 2 components (Next.js for Backend and Lovable for Frontend).
+
+2. **Add environment variables**
+
+   Open the **Environment** tab in the sidebar and add the required variables from the [Environment variables](#environment-variables) section.
+
+3. **Change development port manually in frontend package.json**
+
+   Change the manual port for dev script in /app/frontend/package.json from 3000 to 8080 and press restart button on Lovable component found from Deployment Dashboard.
+    ```
+    "dev": "vite dev --port 8080"
+    ```
+    
+4. **View the deployment**
+
+   Open the frontend preview URL from your Diploi deployment page.
+
+For more information, visit [diploi.com](https://diploi.com/).
+
+### Option 2: Deploy to Vercel and Render
 
 Deploy the backend first, then use its public HTTPS URL when deploying the frontend.
 
-### 1. Create the Render backend
+#### 1. Create the Render backend
 
 1. Push this repository to GitHub, GitLab, or Bitbucket.
 2. In Render, select **New → Web Service** and connect the repository.
@@ -107,7 +137,7 @@ The included [backend/Dockerfile](backend/Dockerfile) installs Node 20, FFmpeg, 
 
 > Render can spin down inactive instances on some plans. The first request after an idle period may be slower. Use an always-on plan if that is unacceptable.
 
-### 2. Create the Vercel frontend
+#### 2. Create the Vercel frontend
 
 1. In Vercel, select **Add New → Project** and import the same repository.
 2. Set **Root Directory** to `frontend`.
@@ -123,7 +153,7 @@ The included [backend/Dockerfile](backend/Dockerfile) installs Node 20, FFmpeg, 
 
 `VITE_API_URL` is public browser configuration, not a secret. Vite embeds it into the frontend during the build, so changing it requires a new Vercel deployment.
 
-### 3. Preview deployments and custom domains
+#### 3. Preview deployments and custom domains
 
 The API only permits browser requests from local development and origins listed in `FRONTEND_ORIGIN`. To use Vercel preview deployments, add each allowed preview domain as a comma-separated value:
 
@@ -133,7 +163,7 @@ FRONTEND_ORIGIN=https://fetchz.vercel.app,https://fetchz-git-main-your-team.verc
 
 After adding a custom frontend domain, include it in `FRONTEND_ORIGIN` and redeploy Render. Do not use `*` in production; restricting origins prevents other sites from using the API from a visitor’s browser.
 
-### 4. Verify the deployment
+#### 4. Verify the deployment
 
 From the Vercel site:
 
