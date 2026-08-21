@@ -1,14 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
-import {
-  Sparkles,
-  Video,
-  Music,
-  ChevronDown,
-  ArrowUp,
-  Check,
-  AlertCircle,
-  X,
-} from "lucide-react";
+import { Sparkles, Video, Music, ChevronDown, ArrowUp, Check, AlertCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchMediaInfo, API_BASE } from "../lib/api";
 import type { MediaInfo } from "../lib/types";
@@ -36,7 +27,14 @@ const platforms: Platform[] = [
     hint: "instagram.com/reel/…",
     tint: "#E1306C",
     icon: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden
+      >
         <rect x="3" y="3" width="18" height="18" rx="5" />
         <circle cx="12" cy="12" r="4" />
         <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
@@ -91,7 +89,8 @@ export function HeroDownloader() {
     if (/youtube\.com|youtu\.be/i.test(trimmed)) setActivePlatform("youtube");
     else if (/twitter\.com|x\.com/i.test(trimmed)) setActivePlatform("twitter");
     else if (/instagram\.com/i.test(trimmed)) setActivePlatform("instagram");
-    else if (/pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it/i.test(trimmed)) setActivePlatform("pinterest");
+    else if (/pinterest\.(com|ca|co\.uk|fr|de|jp)|pin\.it/i.test(trimmed))
+      setActivePlatform("pinterest");
   }, [url]);
 
   const cancelFetch = () => {
@@ -116,7 +115,8 @@ export function HeroDownloader() {
       setMediaInfo(info);
       setStatus("success");
     } catch (err) {
-      if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError")) return;
+      if (controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError"))
+        return;
       const message = err instanceof Error ? err.message : "Something went wrong";
       setErrorMessage(message);
       setStatus("error");
@@ -188,11 +188,7 @@ export function HeroDownloader() {
             disabled={!url.trim()}
             className="absolute right-2 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-white text-black hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {status === "loading" ? (
-              <X className="h-4 w-4" />
-            ) : (
-              <ArrowUp className="h-4 w-4" />
-            )}
+            {status === "loading" ? <X className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
           </button>
         </div>
 
@@ -281,9 +277,15 @@ export function HeroDownloader() {
 
       {/* Trust row */}
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-white/60 font-schibsted">
-        <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Up to 4K quality</span>
-        <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> No files stored</span>
-        <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Works on mobile</span>
+        <span className="flex items-center gap-1.5">
+          <Check className="h-3.5 w-3.5" /> Up to 4K quality
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Check className="h-3.5 w-3.5" /> No files stored
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Check className="h-3.5 w-3.5" /> Works on mobile
+        </span>
       </div>
     </section>
   );

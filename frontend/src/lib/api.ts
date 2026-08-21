@@ -1,6 +1,9 @@
 import type { MediaInfo, ApiError } from "./types";
 
-export const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").replace(/\/+$/, "");
+export const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").replace(
+  /\/+$/,
+  "",
+);
 
 /**
  * POST /api/info — fetch media information for a given URL.
@@ -11,7 +14,9 @@ export async function fetchMediaInfo(url: string, signal?: AbortSignal): Promise
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
-    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(35_000)]) : AbortSignal.timeout(35_000),
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(35_000)])
+      : AbortSignal.timeout(35_000),
   });
 
   if (!res.ok) {

@@ -97,8 +97,9 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
       </div>
 
       {/* Grid layout that adapts dynamically to media aspect ratio */}
-      <div className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-start" : "flex flex-col gap-4"}`}>
-        
+      <div
+        className={`mt-4 ${isVertical ? "grid gap-6 md:grid-cols-[240px_1fr] items-start" : "flex flex-col gap-4"}`}
+      >
         {/* Media Preview Column */}
         <div className={isVertical ? "mx-auto w-full max-w-[240px]" : "w-full"}>
           {!info.isImage && !previewFailed && previewUrl && (
@@ -127,40 +128,49 @@ export function MediaResult({ info, onClose }: MediaResultProps) {
           )}
 
           {/* 2. Thumbnail Fallback (when video fails or no video URL) */}
-          {!info.isImage && (previewFailed || !previewUrl) && info.thumbnail && !thumbnailFailed && (
-            <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg relative">
-              <img
-                src={`${getThumbnailUrl(info.url).replace(/\?url=.*$/, "")}?src=${encodeURIComponent(info.thumbnail)}`}
-                alt={info.title}
-                className={`w-full block object-cover rounded-xl ${isVertical ? "max-h-[400px]" : "max-h-[340px]"}`}
-                onLoad={(e) => {
-                  const img = e.currentTarget;
-                  if (img.naturalWidth && img.naturalHeight) {
-                    setMediaRatio(img.naturalWidth / img.naturalHeight);
-                  }
-                }}
-                onError={() => {
-                  setThumbnailFailed(true);
-                }}
-              />
-              {/* Play icon overlay */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20">
-                  <svg className="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+          {!info.isImage &&
+            (previewFailed || !previewUrl) &&
+            info.thumbnail &&
+            !thumbnailFailed && (
+              <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg relative">
+                <img
+                  src={`${getThumbnailUrl(info.url).replace(/\?url=.*$/, "")}?src=${encodeURIComponent(info.thumbnail)}`}
+                  alt={info.title}
+                  className={`w-full block object-cover rounded-xl ${isVertical ? "max-h-[400px]" : "max-h-[340px]"}`}
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth && img.naturalHeight) {
+                      setMediaRatio(img.naturalWidth / img.naturalHeight);
+                    }
+                  }}
+                  onError={() => {
+                    setThumbnailFailed(true);
+                  }}
+                />
+                {/* Play icon overlay */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20">
+                    <svg
+                      className="h-6 w-6 text-white ml-1"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* 3. Placeholder Fallback (when both video and thumbnail fail) */}
-          {!info.isImage && (previewFailed || !previewUrl) && (thumbnailFailed || !info.thumbnail) && (
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 flex flex-col items-center justify-center py-12 px-4 text-center">
-              <Video className="h-10 w-10 text-white/30 mb-2" />
-              <p className="text-xs text-white/40 font-schibsted">{info.title}</p>
-            </div>
-          )}
+          {!info.isImage &&
+            (previewFailed || !previewUrl) &&
+            (thumbnailFailed || !info.thumbnail) && (
+              <div className="rounded-xl overflow-hidden border border-white/10 bg-white/5 flex flex-col items-center justify-center py-12 px-4 text-center">
+                <Video className="h-10 w-10 text-white/30 mb-2" />
+                <p className="text-xs text-white/40 font-schibsted">{info.title}</p>
+              </div>
+            )}
 
           {/* Image-only post */}
           {info.isImage && info.imageUrl && (

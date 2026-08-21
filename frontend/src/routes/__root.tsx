@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -78,7 +79,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Fetchz" },
-      { name: "description", content: "Download public media from YouTube, X, Instagram, and Pinterest." },
+      {
+        name: "description",
+        content: "Download public media from YouTube, X, Instagram, and Pinterest.",
+      },
       { name: "author", content: "Fetchz" },
       { property: "og:title", content: "Fetchz" },
       { property: "og:description", content: "Download public media from supported platforms." },
@@ -114,6 +118,7 @@ function RootShell({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <Analytics />
         <Scripts />
         <script
           dangerouslySetInnerHTML={{

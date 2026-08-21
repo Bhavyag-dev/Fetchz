@@ -7,8 +7,7 @@ import { useAnimate, useReducedMotion, type Transition } from "framer-motion";
 const radiusFromPercent = (w: number, h: number, pct: number) =>
   (Math.min(w, h) / 2) * (Math.max(0, Math.min(100, pct)) / 100);
 
-const useIsoLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 const GOO_STRENGTH = 4;
 
@@ -39,11 +38,11 @@ function parseColor(input?: string): RGBA {
     return h.length === 6
       ? { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 }
       : {
-        r: (n >>> 24) & 255,
-        g: (n >>> 16) & 255,
-        b: (n >>> 8) & 255,
-        a: (n & 255) / 255,
-      };
+          r: (n >>> 24) & 255,
+          g: (n >>> 16) & 255,
+          b: (n >>> 8) & 255,
+          a: (n & 255) / 255,
+        };
   }
   const fn = c.match(/rgba?\(([^)]+)\)/i);
   if (fn) {
@@ -62,8 +61,7 @@ function parseColor(input?: string): RGBA {
   return WHITE;
 }
 
-const opaque = (c: RGBA) =>
-  `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`;
+const opaque = (c: RGBA) => `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`;
 
 type Colors = {
   fill?: string;
@@ -171,7 +169,7 @@ export default function LiquidCarveButton(props: Props) {
       setRadiusBox((prev) =>
         prev.w === el.offsetWidth && prev.h === el.offsetHeight
           ? prev
-          : { w: el.offsetWidth, h: el.offsetHeight }
+          : { w: el.offsetWidth, h: el.offsetHeight },
       );
     read();
     const ro = new ResizeObserver(read);
@@ -205,8 +203,7 @@ export default function LiquidCarveButton(props: Props) {
   const fillRGB = parseColor(fill);
   const blobRGB = parseColor(blobColor);
 
-  const opts = (): Transition | { duration: 0 } =>
-    reducedMotion ? { duration: 0 } : transition;
+  const opts = (): Transition | { duration: 0 } => (reducedMotion ? { duration: 0 } : transition);
 
   const live = useRef({ smoothness, reducedMotion });
   live.current = { smoothness, reducedMotion };
@@ -244,9 +241,7 @@ export default function LiquidCarveButton(props: Props) {
         st.y += dy;
 
         const speed = Math.hypot(dx, dy) / dt;
-        const want = rm
-          ? 1
-          : Math.min(SQUASH_MAX, 1 + speed * SQUASH_PER_PX_PER_SEC);
+        const want = rm ? 1 : Math.min(SQUASH_MAX, 1 + speed * SQUASH_PER_PX_PER_SEC);
         st.squash += (want - st.squash) * (1 - Math.exp(-dt / SQUASH_TAU));
         if (speed > 8) st.angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
@@ -261,11 +256,7 @@ export default function LiquidCarveButton(props: Props) {
 
   useEffect(() => {
     if (!biteRef.current) return;
-    animate(
-      biteRef.current,
-      { scale: hovered.current ? 1 : 0 },
-      { duration: 0 }
-    );
+    animate(biteRef.current, { scale: hovered.current ? 1 : 0 }, { duration: 0 });
   }, [animate, blob, rad]);
 
   const onEnter = (e: React.PointerEvent) => {
@@ -278,8 +269,7 @@ export default function LiquidCarveButton(props: Props) {
       st.ty = o.dy;
       st.x = o.dx;
       st.y = o.dy;
-      if (followRef.current)
-        followRef.current.style.transform = `translate(${o.dx}px, ${o.dy}px)`;
+      if (followRef.current) followRef.current.style.transform = `translate(${o.dx}px, ${o.dy}px)`;
     }
     animate(biteRef.current, { scale: 1 }, opts() as any);
   };
@@ -294,8 +284,7 @@ export default function LiquidCarveButton(props: Props) {
 
   const onLeave = () => {
     hovered.current = false;
-    if (biteRef.current)
-      animate(biteRef.current, { scale: 0 }, opts() as any);
+    if (biteRef.current) animate(biteRef.current, { scale: 0 }, opts() as any);
   };
 
   const {
@@ -309,11 +298,7 @@ export default function LiquidCarveButton(props: Props) {
     side: iconSide = "left",
   } = icon;
   const iconSrc =
-    typeof iconImage === "string"
-      ? iconImage
-      : iconImage && iconImage.src
-        ? iconImage.src
-        : "";
+    typeof iconImage === "string" ? iconImage : iconImage && iconImage.src ? iconImage.src : "";
   const iconMode = iconKind === "image" && iconSrc ? "image" : "symbol";
   const iconPx = Math.max(1, Math.round(iconSize));
   const iconPadPx = Math.max(0, Math.round(iconPaddingProp));
@@ -356,10 +341,10 @@ export default function LiquidCarveButton(props: Props) {
   const Wrapper: any = link ? "a" : "div";
   const wrapperProps = link
     ? {
-      href: link,
-      target: newTab ? "_blank" : undefined,
-      rel: newTab ? "noopener noreferrer" : undefined,
-    }
+        href: link,
+        target: newTab ? "_blank" : undefined,
+        rel: newTab ? "noopener noreferrer" : undefined,
+      }
     : { role: "button", tabIndex: 0 };
 
   const cornerRad = rounded >= 99 ? (radiusBox.h > 0 ? radiusBox.h / 2 : 50) : rad;
@@ -405,11 +390,7 @@ export default function LiquidCarveButton(props: Props) {
       >
         <defs>
           <filter id={filterId}>
-            <feGaussianBlur
-              in="SourceGraphic"
-              stdDeviation={GOO_STRENGTH}
-              result="blur"
-            />
+            <feGaussianBlur in="SourceGraphic" stdDeviation={GOO_STRENGTH} result="blur" />
             <feColorMatrix
               in="blur"
               mode="matrix"
@@ -447,12 +428,7 @@ export default function LiquidCarveButton(props: Props) {
                     transformOrigin: "center",
                   }}
                 >
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r={blob / 2}
-                    fill="#000"
-                  />
+                  <circle cx="50%" cy="50%" r={blob / 2} fill="#000" />
                 </g>
               </g>
             </g>
