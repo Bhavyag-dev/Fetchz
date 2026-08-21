@@ -1,19 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode } from "react";
-import {
-  Download,
-  Zap,
-  Shield,
-  Infinity as InfinityIcon,
-  Star,
-  Check,
-} from "lucide-react";
+import { Download, Zap, Shield, Infinity as InfinityIcon, Star, Check } from "lucide-react";
 import { VideoBackground } from "../components/VideoBackground";
 import { NavBar } from "../components/NavBar";
 import { HeroDownloader } from "../components/HeroDownloader";
 
-export const Route = createFileRoute("/")(
-  {
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Fetchz — Download videos & audio from Twitter, Pinterest, Instagram, YouTube" },
@@ -58,7 +50,14 @@ const platforms: Platform[] = [
     name: "Instagram",
     tint: "#E1306C",
     icon: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <svg
+        viewBox="0 0 24 24"
+        className="h-4 w-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden
+      >
         <rect x="3" y="3" width="18" height="18" rx="5" />
         <circle cx="12" cy="12" r="4" />
         <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
@@ -99,7 +98,6 @@ function Index() {
 
       {/* Hero Content Area */}
       <main className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 md:px-[120px] pt-28 pb-24 flex flex-col items-center">
-
         {/* Main Headline */}
         <h1 className="font-fustat font-bold text-[52px] sm:text-6xl md:text-[80px] [letter-spacing:-4.8px] leading-none text-white text-center mt-[34px]">
           Save any video
@@ -109,7 +107,8 @@ function Index() {
 
         {/* Subtitle */}
         <p className="mx-auto mt-[34px] max-w-[736px] md:w-[680px] font-fustat font-medium text-[20px] [letter-spacing:-0.4px] text-white/85 text-center leading-relaxed">
-          Fetchz pulls high-quality video and audio from Twitter, Pinterest, Instagram and YouTube. Drop a link, pick a format, get your file.
+          Fetchz pulls high-quality video and audio from Twitter, Pinterest, Instagram and YouTube.
+          Drop a link, pick a format, get your file.
         </p>
 
         {/* Downloader — now connected to real backend */}
@@ -132,7 +131,9 @@ function Index() {
                 >
                   {p.icon}
                 </div>
-                <div className="text-[15px] font-semibold tracking-tight font-schibsted text-white">{p.name}</div>
+                <div className="text-[15px] font-semibold tracking-tight font-schibsted text-white">
+                  {p.name}
+                </div>
               </div>
             ))}
           </div>
@@ -167,12 +168,19 @@ function Index() {
                 text: "No daily caps. No sign-up wall. Paste as many links as you like.",
               },
             ].map((f) => (
-              <div key={f.title} className="rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-7 hover:bg-black/40 transition">
+              <div
+                key={f.title}
+                className="rounded-2xl bg-black/30 backdrop-blur-md border border-white/10 p-7 hover:bg-black/40 transition"
+              >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
                   {f.icon}
                 </div>
-                <h3 className="mt-6 text-[19px] font-semibold tracking-tight font-fustat text-white">{f.title}</h3>
-                <p className="mt-2 text-[14.5px] leading-relaxed text-white/60 font-fustat">{f.text}</p>
+                <h3 className="mt-6 text-[19px] font-semibold tracking-tight font-fustat text-white">
+                  {f.title}
+                </h3>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-white/60 font-fustat">
+                  {f.text}
+                </p>
               </div>
             ))}
           </div>
@@ -189,7 +197,9 @@ function Index() {
               ].map((s) => (
                 <div key={s.n} className="font-fustat">
                   <div className="text-5xl font-light text-white/20">{s.n}</div>
-                  <div className="mt-4 text-[19px] font-semibold tracking-tight text-white">{s.t}</div>
+                  <div className="mt-4 text-[19px] font-semibold tracking-tight text-white">
+                    {s.t}
+                  </div>
                   <p className="mt-1.5 text-[14.5px] leading-relaxed text-white/60">{s.d}</p>
                 </div>
               ))}
@@ -244,7 +254,8 @@ function Index() {
               Simple, transparent <span className="italic font-normal">pricing.</span>
             </h2>
             <p className="mt-3 text-base text-white/60 max-w-lg mx-auto">
-              Start downloading for free today or upgrade to Pro for dedicated high-speed servers and batch processing.
+              Start downloading for free today or upgrade to Pro for dedicated high-speed servers
+              and batch processing.
             </p>
           </div>
 
@@ -253,14 +264,20 @@ function Index() {
             <div className="rounded-[28px] bg-black/30 backdrop-blur-md border border-white/10 p-8 sm:p-10 flex flex-col justify-between hover:border-white/20 transition font-fustat">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-white/60">Free Plan</span>
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-white/70">Always Free</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/60">
+                    Free Plan
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-white/70">
+                    Always Free
+                  </span>
                 </div>
                 <div className="mt-6 flex items-baseline gap-1">
                   <span className="text-5xl font-extrabold tracking-tight text-white">$0</span>
                   <span className="text-sm text-white/50">/ forever</span>
                 </div>
-                <p className="mt-2 text-sm text-white/60">Essential high-speed features for everyday media downloads.</p>
+                <p className="mt-2 text-sm text-white/60">
+                  Essential high-speed features for everyday media downloads.
+                </p>
 
                 <ul className="mt-8 space-y-3.5 text-sm text-white/80">
                   {[
@@ -295,7 +312,9 @@ function Index() {
 
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-white">Pro Pass</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white">
+                    Pro Pass
+                  </span>
                   <span className="rounded-full bg-[rgba(90,225,76,0.9)] px-3 py-1 text-[10px] font-bold text-black uppercase tracking-wider shadow-sm">
                     Most Popular
                   </span>
@@ -304,7 +323,9 @@ function Index() {
                   <span className="text-5xl font-extrabold tracking-tight text-white">$4.99</span>
                   <span className="text-sm text-white/50">/ month</span>
                 </div>
-                <p className="mt-2 text-sm text-white/70">Ultra-fast dedicated servers, batch downloads & priority queue.</p>
+                <p className="mt-2 text-sm text-white/70">
+                  Ultra-fast dedicated servers, batch downloads & priority queue.
+                </p>
 
                 <ul className="mt-8 space-y-3.5 text-sm text-white/90">
                   {[

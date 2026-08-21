@@ -22,10 +22,10 @@ export function VideoBackground({ videoUrl }: VideoBackgroundProps) {
     const step = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       const current = startOpacity + (target - startOpacity) * progress;
       opacityRef.current = current;
-      
+
       if (videoRef.current) {
         videoRef.current.style.opacity = current.toString();
       }
@@ -46,7 +46,7 @@ export function VideoBackground({ videoUrl }: VideoBackgroundProps) {
     if (video) {
       video.style.opacity = "0";
       opacityRef.current = 0;
-      
+
       const playVideo = async () => {
         try {
           await video.play();
@@ -94,7 +94,8 @@ export function VideoBackground({ videoUrl }: VideoBackgroundProps) {
       const video = videoRef.current;
       if (video) {
         video.currentTime = 0;
-        video.play()
+        video
+          .play()
           .then(() => {
             animateOpacity(1, 250);
           })
